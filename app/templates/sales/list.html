@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% import "partials/order_views.html" as ov %}
+{% block title %}Sales Orders{% endblock %}
+
+{% set badge = {'draft':'draft','confirmed':'confirmed','partially_delivered':'partial',
+  'fully_delivered':'done','cancelled':'cancelled'} %}
+{% set statuses = ['draft','confirmed','partially_delivered','fully_delivered','cancelled'] %}
+
+{% macro status_badge(s) %}<span class="status status--{{ badge.get(s,'draft') }}">{{ s.replace('_',' ')|title }}</span>{% endmacro %}
+
+{% block content %}
+{{ ov.toolbar('Sales Orders', 'sales.list_view', view, search,
+              url_for('sales.create'), access_can('sales','create'), mine=mine) }}
+
+{# filter chips — active highlighted #}
+<div class="filter-bar">
+  {% set chips = [('', 'All', none), ('draft','Draft','status'), ('confirmed','Confirmed','status'),
+                  ('partially_delivered','Partially Delivered','status'),
+                  ('fully_delivered','Delivered','status'), ('late','Late','filter')] %}
+  {% for value, lbl, kind in chips %}
+    {% set is_active = (not value and not status) or (status == value) %}
+    {% if not value %}{% set href = url_for('sales.list_view', mine=mine, view=view) %}
+    {% elif kind == 'filter' %}{% set href = url_for('sales.list_view', filter=value, mine=mine, view=view) %}
+    {% else %}{% set href = url_for('sales.list_view', status=value, mine=mine, view=view) %}{% endif %}
+    <a class="filter-chip {{ 'filter-chip--active' if is_active }}" href="{{ href }}">{{ lbl }}</a>
+  {% endfor %}
+  {% if mine %}<span class="filter-chip filter-chip--scope">My orders</span>{% endif %}
+</div>
+
+{% if view == 'kanban' %}
+  {% call(o) ov.kanban_board(orders, statuses) %}
+    <a class="kanban__card" href="{{ url_for('sales.form', order_id=o.id) }}">
+      <div class="kanban__card-top"><b>{{ o.reference }}</b>{{ status_badge(o.status) }}</div>
+      <div>{{ o.customer.name }}</div>
+      <div class="muted">{{ o.creation_date.strftime('%d %b %Y') if o.creation_date }}</div>
+    </a>
+  {% endcall %}
+{% else %}
+  <table class="list-table">
+    <thead><tr><th>Reference</th><th>Date</th><th>Customer</th><th>Salesperson</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>
+      {% for o in orders %}
+        <tr class="row-link" tabindex="0" data-href="{{ url_for('sales.form', order_id=o.id) }}"
+            onclick="window.location=this.dataset.href"
+            onkeydown="if(event.key==='Enter')window.location=this.dataset.href">
+          <td>{{ o.reference }}</td>
+          <td>{{ o.creation_date.strftime('%Y-%m-%d') if o.creation_date else '—' }}</td>
+          <td>{{ o.customer.name }}</td>
+          <td>{{ o.salesperson.name if o.salesperson else '—' }}</td>
+          <td>{{ status_badge(o.status) }}</td>
+          <td class="num">₹ {{ '%.2f'|format(o.total) }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="muted">No sales orders{% if status or search %} match{% endif %}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}

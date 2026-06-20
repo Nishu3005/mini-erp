@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+
+{% set action_label = {'create':'Created','write':'Updated','status_change':'Status',
+  'delete':'Deleted','deliver':'Delivered','receive':'Received','produce':'Produced'} %}
+
+{% block content %}
+<h1 class="page-title">Audit Logs</h1>
+
+{# --- 4 stat cards --- #}
+<div class="stat-cards">
+  <div class="stat-card stat-card--total"><span class="stat-card__n">{{ stats.total }}</span>Total Logs<small>All time logs</small></div>
+  <div class="stat-card stat-card--create"><span class="stat-card__n">{{ stats.create }}</span>Create Actions<small>Records Created</small></div>
+  <div class="stat-card stat-card--update"><span class="stat-card__n">{{ stats.update }}</span>Update Actions<small>Records Updated</small></div>
+  <div class="stat-card stat-card--delete"><span class="stat-card__n">{{ stats.delete }}</span>Delete Actions<small>Records Deleted</small></div>
+</div>
+
+{# --- filter bar --- #}
+<form class="audit-filters" method="get">
+  <div class="audit-filters__field">
+    <label>Date Range</label>
+    <span class="audit-filters__range">
+      <input class="input" type="date" name="date_from" value="{{ selected.date_from }}">
+      <input class="input" type="date" name="date_to" value="{{ selected.date_to }}">
+    </span>
+  </div>
+  <div class="audit-filters__field">
+    <label>User</label>
+    <select class="input" name="user_id">
+      <option value="">All Users</option>
+      {% for u in options.users %}
+        <option value="{{ u.id }}" {{ 'selected' if selected.user_id==u.id }}>{{ u.name or u.login_id }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="audit-filters__field">
+    <label>Module</label>
+    <select class="input" name="module">
+      <option value="">All Modules</option>
+      {% for m in options.modules %}
+        <option value="{{ m }}" {{ 'selected' if selected.module==m }}>{{ m|title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="audit-filters__field">
+    <label>Actions</label>
+    <select class="input" name="action">
+      <option value="">All Actions</option>
+      {% for a in options.actions %}
+        <option value="{{ a }}" {{ 'selected' if selected.action==a }}>{{ action_label.get(a, a|title) }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="audit-filters__actions">
+    <button class="btn btn--primary" type="submit">Filter</button>
+    <a class="btn" href="{{ url_for('audit.index') }}">Reset</a>
+  </div>
+</form>
+
+{# --- table --- #}
+<table class="list-table">
+  <thead>
+    <tr>
+      <th>Date &amp; Time</th><th>User</th><th>Module</th><th>Record Type</th>
+      <th>Record ID</th><th>Action</th><th>Field Changed</th>
+      <th>Old Value</th><th>New Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in result.rows %}
+      <tr>
+        <td>{{ e.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+        <td>{{ e.user.name if e.user else '—' }}</td>
+        <td>{{ e.module|title if e.module else '—' }}</td>
+        <td>{{ e.record_type or '—' }}</td>
+        <td>{{ e.record_ref or '—' }}</td>
+        <td><span class="status status--{{ {'create':'done','write':'confirmed','delete':'cancelled'}.get(e.action,'draft') }}">{{ action_label.get(e.action, e.action) }}</span></td>
+        <td>{{ e.field or '—' }}</td>
+        <td>{{ e.old_value or '—' }}</td>
+        <td>{{ e.new_value or '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="9" class="muted">No audit entries match these filters.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{# --- pagination --- #}
+{% if result.pages > 1 %}
+<div class="pagination">
+  {% set base = request.args.to_dict() %}
+  {% for p in range(1, result.pages + 1) %}
+    {% set _ = base.update({'page': p}) %}
+    <a class="pagination__page {{ 'pagination__page--active' if p==result.page }}"
+       href="{{ url_for('audit.index', **base) }}">{{ p }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="list-toolbar">
+  {% if access_can('product', 'create') %}
+    <a class="btn btn--primary" href="{{ url_for('product.create') }}">New</a>
+  {% endif %}
+  <span class="list-toolbar__title">Products</span>
+</div>
+
+<table class="list-table">
+  <thead>
+    <tr>
+      <th>Reference</th><th>Product</th><th class="num">Sales Price</th>
+      <th class="num">Cost Price</th><th class="num">On Hand</th>
+      <th class="num">Reserved</th><th class="num">Free To Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+      {% set res = reserved.get(p.id, 0) %}
+      <tr onclick="window.location='{{ url_for('product.form', product_id=p.id) }}'">
+        <td>{{ p.reference }}</td>
+        <td>{{ p.name }}</td>
+        <td class="num">₹ {{ '%.2f'|format(p.sales_price) }}</td>
+        <td class="num">₹ {{ '%.2f'|format(p.cost_price) }}</td>
+        <td class="num">{{ '%.2f'|format(p.on_hand_qty) }}</td>
+        <td class="num">{{ '%.2f'|format(res) }}</td>
+        <td class="num {{ 'neg' if (p.on_hand_qty - res) < 0 }}">
+          {{ '%.2f'|format(p.on_hand_qty - res) }}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="muted">No products yet. Click “New” to add one.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

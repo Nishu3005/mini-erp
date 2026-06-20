@@ -1,0 +1,32 @@
+[
+  {
+    "ref_label": "BOM-WT",
+    "finished_product": "Wooden Table",
+    "quantity": 1,
+    "components": [
+      { "product": "Wooden Legs", "to_consume": 4 },
+      { "product": "Wooden Top", "to_consume": 1 },
+      { "product": "Screws (pack)", "to_consume": 12 }
+    ],
+    "operations": [
+      { "operation": "Assembly", "work_center": "Assembly Line", "expected_duration": 60 },
+      { "operation": "Painting", "work_center": "Paint Floor", "expected_duration": 30 },
+      { "operation": "Packaging", "work_center": "Packaging Unit", "expected_duration": 20 }
+    ]
+  },
+  {
+    "ref_label": "BOM-DT",
+    "finished_product": "Dining Table",
+    "quantity": 1,
+    "components": [
+      { "product": "Wooden Legs", "to_consume": 6 },
+      { "product": "Wooden Top", "to_consume": 2 },
+      { "product": "Screws (pack)", "to_consume": 20 }
+    ],
+    "operations": [
+      { "operation": "Assembly", "work_center": "Assembly Line", "expected_duration": 90 },
+      { "operation": "Polishing", "work_center": "Paint Floor", "expected_duration": 45 },
+      { "operation": "Packaging", "work_center": "Packaging Unit", "expected_duration": 25 }
+    ]
+  }
+]

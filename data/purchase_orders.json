@@ -1,0 +1,48 @@
+[
+  {
+    "vendor": "Plastofact IN",
+    "responsible": "purchase.vijay",
+    "status": "confirmed",
+    "created_offset_days": -3,
+    "lines": [
+      { "product": "Lighting Frame", "ordered_qty": 100, "received_qty": 0 }
+    ]
+  },
+  {
+    "vendor": "Gujarat Timber Traders",
+    "responsible": "purchase.vijay",
+    "status": "partially_received",
+    "created_offset_days": -6,
+    "lines": [
+      { "product": "Wooden Legs", "ordered_qty": 200, "received_qty": 80 }
+    ]
+  },
+  {
+    "vendor": "National Plywood Co.",
+    "responsible": "purchase.vijay",
+    "status": "fully_received",
+    "created_offset_days": -10,
+    "lines": [
+      { "product": "Wooden Top", "ordered_qty": 60, "received_qty": 60 }
+    ]
+  },
+  {
+    "vendor": "Shakti Hardware & Fasteners",
+    "responsible": "purchase.vijay",
+    "status": "draft",
+    "created_offset_days": -1,
+    "lines": [
+      { "product": "Screws (pack)", "ordered_qty": 1000, "received_qty": 0 }
+    ]
+  },
+  {
+    "vendor": "ORM Metals",
+    "responsible": "purchase.vijay",
+    "status": "confirmed",
+    "created_offset_days": -11,
+    "expected_offset_days": -4,
+    "lines": [
+      { "product": "Wooden Legs", "ordered_qty": 150, "received_qty": 0 }
+    ]
+  }
+]

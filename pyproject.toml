@@ -1,0 +1,36 @@
+[project]
+name = "mini-erp"
+version = "0.1.0"
+description = "Mini ERP for Shiv Furniture Works — Odoo x KAHE hackathon"
+requires-python = ">=3.11"
+dependencies = [
+    "Flask",
+    "Flask-SQLAlchemy",
+    "Flask-Migrate",
+    "Flask-Login",
+    "Flask-WTF",
+    "WTForms",
+    "python-dotenv",
+    "email-validator",
+]
+
+[dependency-groups]
+prod = [
+    "waitress",
+]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

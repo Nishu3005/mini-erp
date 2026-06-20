@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ order.reference if order else 'New Sales Order' }}{% endblock %}
+
+{% block content %}
+{% set deliverable = order and order.status in ['confirmed','partially_delivered'] %}
+
+{# ---------- NEW ORDER (draft creation) ---------- #}
+{% if not order %}
+<form method="post" action="{{ url_for('sales.create') }}" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ url_for('sales.list_view') }}">Back</a>
+    <button class="btn btn--primary" type="submit">Create</button>
+  </div>
+  <div class="form-grid">
+    <label>Customer</label>
+    <select class="input" name="customer_id" required>
+      {% for c in customers %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <h3>Products</h3>
+  <table class="list-table">
+    <thead><tr><th>Product</th><th class="num">Ordered Qty</th></tr></thead>
+    <tbody>
+      {% for i in range(3) %}
+      <tr>
+        <td>
+          <select class="input" name="product_id">
+            <option value="">—</option>
+            {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+          </select>
+        </td>
+        <td class="num"><input class="input" name="ordered_qty" type="number" step="0.01" min="0"></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</form>
+
+{# ---------- EXISTING ORDER ---------- #}
+{% else %}
+<div class="form-card">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ url_for('sales.list_view') }}">Back</a>
+
+    {% if order.status == 'draft' and access_can('sales','approve') %}
+      <form method="post" action="{{ url_for('sales.confirm', order_id=order.id) }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn--primary">Confirm</button>
+      </form>
+    {% endif %}
+
+    {% if order.status in ['draft','confirmed'] and access_can('sales','edit') %}
+      <form method="post" action="{{ url_for('sales.cancel', order_id=order.id) }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn">Cancel</button>
+      </form>
+    {% endif %}
+
+    <span class="ref-badge">{{ order.reference }}</span>
+    <span class="status-inline">Status: {{ order.status.replace('_',' ')|title }}</span>
+  </div>
+
+  <div class="form-grid">
+    <label>Customer</label><div class="readonly-text">{{ order.customer.name }}</div>
+    <label>Customer Address</label><div class="readonly-text">{{ order.customer_address or '—' }}</div>
+    <label>Creation Date</label><div class="readonly-text">{{ order.creation_date.strftime('%Y-%m-%d %H:%M') if order.creation_date }}</div>
+    <label>Sales Person</label><div class="readonly-text">{{ order.salesperson.name if order.salesperson else '—' }}</div>
+  </div>
+
+  <form method="post" action="{{ url_for('sales.deliver', order_id=order.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h3>Products</h3>
+    <table class="list-table">
+      <thead>
+        <tr>
+          <th>Product</th><th>Availability</th><th class="num">Ordered</th>
+          <th class="num">Delivered</th>{% if deliverable %}<th class="num">Deliver now</th>{% endif %}
+          <th class="num">Unit Price</th><th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in order.lines %}
+        <tr>
+          <td>{{ line.product.name }}</td>
+          <td>{% if line.availability %}<span class="status status--cancelled">Shortage</span>
+              {% else %}<span class="status status--done">Available</span>{% endif %}</td>
+          <td class="num">{{ '%.2f'|format(line.ordered_qty) }}</td>
+          <td class="num">{{ '%.2f'|format(line.delivered_qty) }}</td>
+          {% if deliverable %}
+            <td class="num"><input class="input" name="deliver_{{ line.id }}" type="number"
+                  step="0.01" min="0" max="{{ line.outstanding_qty }}" placeholder="0"></td>
+          {% endif %}
+          <td class="num">₹ {{ '%.2f'|format(line.sales_price) }}</td>
+          <td class="num">₹ {{ '%.2f'|format(line.total) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td colspan="{{ 6 if deliverable else 5 }}" class="num"><b>Total</b></td>
+            <td class="num"><b>₹ {{ '%.2f'|format(order.total) }}</b></td></tr>
+      </tfoot>
+    </table>
+
+    {% if deliverable and access_can('sales','edit') %}
+      <button class="btn btn--primary" type="submit">Deliver</button>
+    {% endif %}
+  </form>
+</div>
+
+{% include "partials/logs.html" %}
+{% endif %}
+{% endblock %}

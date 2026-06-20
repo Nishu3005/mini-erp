@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "partials/order_views.html" as ov %}
+{% block title %}Bills of Materials{% endblock %}
+
+{% block content %}
+{{ ov.toolbar('Bills of Materials', 'bom.list_view', 'list', search,
+              url_for('bom.create'), access_can('manufacturing','edit_bom'), kanban=False) }}
+
+<table class="list-table">
+  <thead><tr><th>Reference</th><th>Finished Product</th><th class="num">Quantity</th><th>Label</th></tr></thead>
+  <tbody>
+    {% for b in boms %}
+      <tr class="row-link" tabindex="0" data-href="{{ url_for('bom.form', bom_id=b.id) }}"
+          onclick="window.location=this.dataset.href"
+          onkeydown="if(event.key==='Enter')window.location=this.dataset.href">
+        <td>{{ b.reference }}</td>
+        <td>{{ b.finished_product.name }}</td>
+        <td class="num">{{ '%.2f'|format(b.quantity) }}</td>
+        <td>{{ b.ref_label or '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">No bills of materials{% if search %} match{% endif %}.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

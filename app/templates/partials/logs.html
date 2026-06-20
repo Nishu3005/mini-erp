@@ -1,0 +1,25 @@
+{# Reusable audit-log panel. Expects `logs` in context (already module-filtered). #}
+<section class="logs-panel">
+  <h2 class="logs-panel__title">Logs</h2>
+  {% if logs %}
+    <table class="list-table">
+      <thead>
+        <tr><th>When</th><th>User</th><th>Action</th><th>Field</th><th>Old</th><th>New</th></tr>
+      </thead>
+      <tbody>
+        {% for e in logs %}
+          <tr>
+            <td>{{ e.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ e.user.name if e.user else '—' }}</td>
+            <td>{{ e.action }}</td>
+            <td>{{ e.field or '—' }}</td>
+            <td>{{ e.old_value or '—' }}</td>
+            <td>{{ e.new_value or '—' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No log entries yet.</p>
+  {% endif %}
+</section>

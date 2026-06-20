@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ bom.reference if bom else 'New BoM' }}{% endblock %}
+
+{% block content %}
+{% set can_edit = access_can('manufacturing','edit_bom') %}
+<form method="post" class="form-card"
+      action="{{ url_for('bom.form', bom_id=bom.id) if bom else url_for('bom.create') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ url_for('bom.list_view') }}">Back</a>
+    {% if can_edit %}<button class="btn btn--primary" type="submit">Save</button>{% endif %}
+    {% if bom %}<span class="ref-badge">{{ bom.reference }}</span>{% endif %}
+  </div>
+
+  <div class="form-grid">
+    <label>Finished Product</label>
+    <select class="input" name="finished_product_id" required {{ 'disabled' if not can_edit }}>
+      {% for p in products %}
+        <option value="{{ p.id }}" {{ 'selected' if bom and bom.finished_product_id==p.id }}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+    <label>Quantity</label>
+    <input class="input" name="quantity" type="number" step="0.01" min="0"
+           value="{{ '%.2f'|format(bom.quantity) if bom else '1.00' }}" {{ 'readonly' if not can_edit }}>
+    <label>Reference (label)</label>
+    <input class="input" name="ref_label" maxlength="8" value="{{ bom.ref_label or '' if bom else '' }}"
+           placeholder="≤ 8 chars" {{ 'readonly' if not can_edit }}>
+  </div>
+
+  <h3>Components</h3>
+  <table class="list-table">
+    <thead><tr><th>Component</th><th class="num">To Consume</th></tr></thead>
+    <tbody>
+      {% set rows = (bom.components|list) if bom else [] %}
+      {% for i in range(5) %}
+        {% set c = rows[i] if i < rows|length else none %}
+        <tr>
+          <td><select class="input" name="comp_product_id" {{ 'disabled' if not can_edit }}>
+            <option value="">—</option>
+            {% for p in products %}<option value="{{ p.id }}" {{ 'selected' if c and c.product_id==p.id }}>{{ p.name }}</option>{% endfor %}
+          </select></td>
+          <td class="num"><input class="input" name="comp_to_consume" type="number" step="0.01" min="0"
+                value="{{ '%.2f'|format(c.to_consume) if c else '' }}" {{ 'readonly' if not can_edit }}></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if bom and bom.operations %}
+  <h3>Work Orders (operations)</h3>
+  <table class="list-table">
+    <thead><tr><th>Operation</th><th>Work Center</th><th class="num">Expected (min/unit)</th></tr></thead>
+    <tbody>
+      {% for op in bom.operations %}
+        <tr><td>{{ op.operation }}</td><td>{{ op.work_center }}</td><td class="num">{{ op.expected_duration }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</form>
+{% if bom %}{% include "partials/logs.html" %}{% endif %}
+{% endblock %}

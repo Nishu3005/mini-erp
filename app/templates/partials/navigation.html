@@ -1,0 +1,56 @@
+{# Top bar per the breakdown wireframe:
+   - Hamburger (left)  -> Master Menu panel slides in from the RIGHT.
+   - App Logo + Name   -> centered.
+   - User Avatar (right)-> Profile/login panel slides in from the LEFT ("login and profile setup").
+#}
+<header class="topbar">
+  <button class="topbar__icon" onclick="document.getElementById('master-menu').classList.add('open')"
+          aria-label="Open menu" type="button">&#9776;</button>
+  <a class="topbar__brand" href="{{ url_for('dashboard.index') }}">Shiv Furniture Works</a>
+  <button class="topbar__avatar-btn" onclick="document.getElementById('profile-panel').classList.add('open')"
+          aria-label="Profile" type="button">
+    {% if current_user.photo_path %}
+      <img class="topbar__avatar-img" src="{{ url_for('static', filename=current_user.photo_path) }}" alt="me">
+    {% else %}&#9787;{% endif %}
+  </button>
+</header>
+
+{# Profile / login panel — slides from the LEFT #}
+<aside id="profile-panel" class="side-panel side-panel--left">
+  <div class="side-panel__head">
+    <span>Profile</span>
+    <button class="side-panel__close" onclick="document.getElementById('profile-panel').classList.remove('open')"
+            aria-label="Close" type="button">&times;</button>
+  </div>
+  <div class="side-panel__body">
+    <div class="side-panel__user">
+      <strong>{{ current_user.name or current_user.login_id }}</strong>
+      <span class="muted">{{ current_user.position or '—' }}</span>
+    </div>
+    <nav class="side-panel__nav">
+      <a href="{{ url_for('profile.index') }}">User Login Detail Management</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+  </div>
+</aside>
+
+{# Master Menu — slides from the RIGHT #}
+<aside id="master-menu" class="side-panel side-panel--right">
+  <div class="side-panel__head">
+    <span>Master Menu</span>
+    <button class="side-panel__close" onclick="document.getElementById('master-menu').classList.remove('open')"
+            aria-label="Close" type="button">&times;</button>
+  </div>
+  <nav class="side-panel__nav">
+    {% if access_can('sales','view') %}<a href="{{ url_for('sales.list_view') }}">Sale Orders</a>{% endif %}
+    {% if access_can('purchase','view') %}<a href="{{ url_for('purchase.list_view') }}">Purchase Orders</a>{% endif %}
+    {% if access_can('manufacturing','view') %}<a href="{{ url_for('manufacturing.list_view') }}">Manufacturing Orders</a>{% endif %}
+    {% if access_can('manufacturing','view') %}<a href="{{ url_for('bom.list_view') }}">Bills of Materials</a>{% endif %}
+    {% if access_can('product','view') %}<a href="{{ url_for('product.list_view') }}">Products</a>{% endif %}
+    {% if current_user.is_admin %}<a href="{{ url_for('audit.index') }}">Audit Logs</a>
+    {% else %}<span class="side-panel__soon">Audit Logs</span>{% endif %}
+  </nav>
+</aside>
+
+<div class="side-panel__scrim"
+     onclick="document.querySelectorAll('.side-panel.open').forEach(p=>p.classList.remove('open'))"></div>

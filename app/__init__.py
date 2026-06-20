@@ -1,0 +1,111 @@
+"""Application factory. See spec/project-structure.md."""
+from pathlib import Path
+
+from flask import Flask, render_template
+
+from config import config_by_name
+from app.extensions import csrf, db, login_manager, migrate
+
+
+def create_app(config_name: str = "dev") -> Flask:
+    app = Flask(__name__)
+    app.config.from_object(config_by_name[config_name])
+
+    # Fail fast: production must supply a real SECRET_KEY (no insecure fallback).
+    if config_name == "prod" and not app.config.get("SECRET_KEY"):
+        raise RuntimeError("SECRET_KEY environment variable is required in production.")
+
+    # ensure instance/ exists for the SQLite file
+    Path(app.root_path).parent.joinpath("instance").mkdir(exist_ok=True)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    csrf.init_app(app)
+    
+    adding_admin = db
+
+    from app import models  # noqa: F401  (register models with metadata)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return db.session.get(models.User, int(user_id))
+
+    from app.routes.audit import bp as audit_bp
+    from app.routes.auth import bp as auth_bp
+    from app.routes.bom import bp as bom_bp
+    from app.routes.dashboard import bp as dashboard_bp
+    from app.routes.manufacturing import bp as manufacturing_bp
+    from app.routes.product import bp as product_bp
+    from app.routes.profile import bp as profile_bp
+    from app.routes.purchase import bp as purchase_bp
+    from app.routes.sales import bp as sales_bp
+
+    app.register_blueprint(audit_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(bom_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(manufacturing_bp)
+    app.register_blueprint(product_bp)
+    app.register_blueprint(profile_bp)
+    app.register_blueprint(purchase_bp)
+    app.register_blueprint(sales_bp)
+
+    @app.context_processor
+    def inject_helpers():
+        from app.services.access import can_current
+        return {"access_can": can_current}
+
+    @app.errorhandler(403)
+    def forbidden(_e):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def not_found(_e):
+        return render_template("errors/404.html"), 404
+
+    _register_cli(app)
+    return app
+
+
+def _register_cli(app: Flask) -> None:
+    import click
+
+    from app.models.user import AccessRight, RIGHTS_MODULES, User
+
+    @app.cli.command("init-db")
+    def init_db():
+        """Create all tables (dev shortcut; use migrations in real flow)."""
+        db.create_all()
+        click.echo("Tables created.")
+
+    @app.cli.command("seed-admin")
+    @click.option("--login-id", default="admin1")
+    @click.option("--email", default="admin@shiv.local")
+    @click.option("--password", default="Admin@123")
+    def seed_admin(login_id, email, password):
+        """Create a System Administrator account."""
+        if User.query.filter_by(login_id=login_id).first():
+            click.echo("Admin already exists.")
+            return
+        admin = User(login_id=login_id, email=email, name="System Administrator",
+                     position="Administrator", is_admin=True)
+        admin.set_password(password)
+        db.session.add(admin)
+        db.session.commit()
+        click.echo(f"Admin '{login_id}' created. Password set from the --password option.")
+
+    @app.cli.command("seed-data")
+    @click.option("--reset", is_flag=True, help="Wipe existing data first, then reload.")
+    def seed_data(reset):
+        """Load believable starter data from the data/ folder."""
+        from app.services import seed
+
+        if seed.has_data() and not reset:
+            click.echo("Data already present. Use --reset to wipe and reload.")
+            return
+        if reset:
+            seed.reset()
+            click.echo("Existing data wiped.")
+        summary = seed.seed()
+        click.echo("Seeded: " + ", ".join(f"{k}={v}" for k, v in summary.items()))

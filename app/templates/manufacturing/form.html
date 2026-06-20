@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ order.reference if order else 'New Manufacturing Order' }}{% endblock %}
+
+{% macro post_btn(action, label, cls='', form_id=none) %}
+  {% if form_id %}
+    <button class="btn {{ cls }}" type="submit" form="{{ form_id }}">{{ label }}</button>
+  {% else %}
+    <form method="post" action="{{ action }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn {{ cls }}">{{ label }}</button>
+    </form>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+{% if not order %}
+<form method="post" action="{{ url_for('manufacturing.create') }}" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ url_for('manufacturing.list_view') }}">Back</a>
+    <button class="btn btn--primary" type="submit">Create</button>
+  </div>
+  <div class="form-grid">
+    <label>Finished Product</label>
+    <select class="input" name="finished_product_id" required>
+      {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+    </select>
+    <label>Quantity</label>
+    <input class="input" name="quantity" type="number" step="0.01" min="0" required>
+    <label>Bill of Materials</label>
+    <select class="input" name="bom_id">
+      <option value="">— (none; add components manually later)</option>
+      {% for b in boms %}<option value="{{ b.id }}">{{ b.reference }} — {{ b.finished_product.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <p class="muted" style="font-size:13px">Components &amp; work orders are populated from the BoM (× quantity) on create.</p>
+</form>
+
+{% else %}
+{% set producible = order.status in ['confirmed','in_progress'] %}
+<div class="form-card">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ url_for('manufacturing.list_view') }}">Back</a>
+    {% if access_can('manufacturing','production_entry') %}
+      {% if order.status == 'draft' %}
+        {{ post_btn(url_for('manufacturing.confirm', order_id=order.id), 'Confirm', 'btn--primary') }}
+      {% endif %}
+      {% if order.status == 'confirmed' %}
+        {{ post_btn(url_for('manufacturing.start', order_id=order.id), 'Start', 'btn--primary') }}
+      {% endif %}
+      {% if producible %}
+        {{ post_btn(url_for('manufacturing.produce', order_id=order.id), 'Produce', 'btn--primary', form_id='produce-form') }}
+      {% endif %}
+      {% if order.status in ['draft','confirmed','in_progress'] %}
+        {{ post_btn(url_for('manufacturing.cancel', order_id=order.id), 'Cancel', '') }}
+      {% endif %}
+    {% endif %}
+    <span class="ref-badge">{{ order.reference }}</span>
+    <span class="status-inline">Status: {{ order.status.replace('_',' ')|title }}</span>
+  </div>
+
+  <div class="form-grid">
+    <label>Finished Product</label><div class="readonly-text">{{ order.finished_product.name }}</div>
+    <label>Quantity</label><div class="readonly-text">{{ '%.2f'|format(order.quantity) }} Units</div>
+    <label>Bill of Materials</label><div class="readonly-text">{{ order.bom.reference if order.bom else '—' }}</div>
+    <label>Assignee</label><div class="readonly-text">{{ order.assignee.name if order.assignee else '—' }}</div>
+    <label>Schedule Date</label><div class="readonly-text">{{ order.schedule_date.strftime('%Y-%m-%d') if order.schedule_date else '—' }}</div>
+  </div>
+
+  {# Components — consume inputs live in the produce form #}
+  <form id="produce-form" method="post" action="{{ url_for('manufacturing.produce', order_id=order.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h3>Components</h3>
+    <table class="list-table">
+      <thead><tr><th>Component</th><th>Availability</th><th class="num">To Consume</th>
+        {% if producible %}<th class="num">Consume now</th>{% endif %}<th class="num">Consumed</th></tr></thead>
+      <tbody>
+        {% for c in order.components %}
+        <tr>
+          <td>{{ c.product.name }}</td>
+          <td>{% if c.availability == 'Available' %}<span class="status status--done">Available</span>
+              {% else %}<span class="status status--cancelled">Not Available</span>{% endif %}</td>
+          <td class="num">{{ '%.2f'|format(c.to_consume) }}</td>
+          {% if producible %}
+            <td class="num"><input class="input" name="consume_{{ c.id }}" type="number" step="0.01" min="0"
+                  value="{{ '%.2f'|format(c.to_consume) }}"></td>
+          {% endif %}
+          <td class="num">{{ '%.2f'|format(c.consumed_qty) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No components.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </form>
+
+  <h3>Work Orders</h3>
+  <table class="list-table">
+    <thead><tr><th>Operation</th><th>Work Center</th><th class="num">Expected (min)</th><th class="num">Real (min)</th></tr></thead>
+    <tbody>
+      {% for w in order.work_orders %}
+        <tr><td>{{ w.operation }}</td><td>{{ w.work_center }}</td>
+            <td class="num">{{ w.expected_duration }}</td><td class="num">{{ w.real_duration }}</td></tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">No work orders.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/logs.html" %}
+{% endif %}
+{% endblock %}

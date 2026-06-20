@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Wooden Legs",
+    "sales_price": 120.00,
+    "cost_price": 80.00,
+    "on_hand_qty": 320,
+    "procure_on_demand": true,
+    "procure_method": "purchase",
+    "vendor": "Gujarat Timber Traders"
+  },
+  {
+    "name": "Wooden Top",
+    "sales_price": 450.00,
+    "cost_price": 300.00,
+    "on_hand_qty": 90,
+    "procure_on_demand": true,
+    "procure_method": "purchase",
+    "vendor": "National Plywood Co."
+  },
+  {
+    "name": "Screws (pack)",
+    "sales_price": 5.00,
+    "cost_price": 3.00,
+    "on_hand_qty": 1500,
+    "procure_on_demand": true,
+    "procure_method": "purchase",
+    "vendor": "Shakti Hardware & Fasteners"
+  },
+  {
+    "name": "Door Frames",
+    "sales_price": 10.00,
+    "cost_price": 8.00,
+    "on_hand_qty": 50,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Lighting Frame",
+    "sales_price": 5.00,
+    "cost_price": 3.00,
+    "on_hand_qty": 12,
+    "procure_on_demand": true,
+    "procure_method": "purchase",
+    "vendor": "ORM Metals"
+  },
+  {
+    "name": "Wooden Table",
+    "sales_price": 3200.00,
+    "cost_price": 1800.00,
+    "on_hand_qty": 8,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing",
+    "bom": "Wooden Table"
+  },
+  {
+    "name": "Office Chair",
+    "sales_price": 2500.00,
+    "cost_price": 1400.00,
+    "on_hand_qty": 25,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Dining Table",
+    "sales_price": 5400.00,
+    "cost_price": 3100.00,
+    "on_hand_qty": 3,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing",
+    "bom": "Dining Table"
+  }
+]

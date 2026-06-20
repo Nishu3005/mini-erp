@@ -1,0 +1,38 @@
+{
+  "_comment": "Each preset maps to per-module access_right rows. Modules: sales/purchase/manufacturing/product. role: admin|user|none. Flags follow spec/access-rights.md.",
+
+  "owner": {
+    "sales":         { "role": "admin", "view": true, "create": true, "edit": true, "delete": true, "approve": true },
+    "purchase":      { "role": "admin", "view": true, "create": true, "edit": true, "delete": true, "approve": true },
+    "manufacturing": { "role": "admin", "view": true, "create": true, "edit": true, "delete": true, "production_entry": true, "edit_bom": true },
+    "product":       { "role": "admin", "view": true, "create": true, "edit": true, "delete": true }
+  },
+
+  "manager": {
+    "sales":         { "role": "user", "view": true, "create": true, "edit": true, "approve": true },
+    "purchase":      { "role": "user", "view": true, "create": true, "edit": true, "approve": true },
+    "manufacturing": { "role": "user", "view": true, "create": true, "edit": true, "production_entry": true },
+    "product":       { "role": "user", "view": true, "create": true, "edit": true }
+  },
+
+  "sales": {
+    "sales":         { "role": "user", "view": true, "create": true, "edit": true },
+    "purchase":      { "role": "none", "view": false },
+    "manufacturing": { "role": "none", "view": false },
+    "product":       { "role": "user", "view": true }
+  },
+
+  "purchase": {
+    "sales":         { "role": "none", "view": false },
+    "purchase":      { "role": "user", "view": true, "create": true, "edit": true },
+    "manufacturing": { "role": "none", "view": false },
+    "product":       { "role": "user", "view": true }
+  },
+
+  "manufacturing": {
+    "sales":         { "role": "none", "view": false },
+    "purchase":      { "role": "none", "view": false },
+    "manufacturing": { "role": "user", "view": true, "create": true, "edit": true, "production_entry": true },
+    "product":       { "role": "user", "view": true }
+  }
+}

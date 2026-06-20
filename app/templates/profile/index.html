@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<h1 class="page-title">User Login Detail Management</h1>
+
+<form method="post" enctype="multipart/form-data" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="profile">
+    <div class="profile__fields">
+      <label>Name</label>
+      <input class="input" name="name" value="{{ user.name or '' }}">
+
+      <label>Address</label>
+      <input class="input" name="address" value="{{ user.address or '' }}">
+
+      <label>Mobile Number</label>
+      <input class="input" name="mobile" value="{{ user.mobile or '' }}">
+
+      <label>Email ID</label>
+      <input class="input readonly" value="{{ user.email }}" readonly title="Email cannot be changed">
+
+      <label>Position</label>
+      <input class="input readonly" value="{{ user.position or '—' }}" readonly
+             title="Only a System Administrator can change Position">
+    </div>
+
+    <div class="profile__photo">
+      {% if user.photo_path %}
+        <img class="profile__avatar" src="{{ url_for('static', filename=user.photo_path) }}" alt="avatar">
+      {% else %}
+        <div class="profile__avatar profile__avatar--empty">No photo</div>
+      {% endif %}
+      <label class="profile__upload">Change photo
+        <input type="file" name="photo" accept="image/*" hidden
+               onchange="this.form.querySelector('[name=name]').focus()">
+      </label>
+    </div>
+  </div>
+
+  <div class="form-card__bar" style="border-top:1px solid var(--hairline); border-bottom:none; margin-top:var(--md)">
+    <a class="btn" href="{{ url_for('dashboard.index') }}">Back</a>
+    <button class="btn btn--primary" type="submit">Save</button>
+  </div>
+  <p class="muted" style="font-size:13px">
+    Email and Position are read-only. Position is set by a System Administrator.
+  </p>
+</form>
+{% endblock %}

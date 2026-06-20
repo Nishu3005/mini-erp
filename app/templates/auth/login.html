@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h1 class="auth-card__title">
+    {% if as_admin %}Login as System Administrator{% else %}Login{% endif %}
+  </h1>
+
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <label>{{ form.login_id.label }}</label>
+    {{ form.login_id(class="input") }}
+
+    <label>{{ form.password.label }}</label>
+    {{ form.password(class="input") }}
+
+    {{ form.submit(class="btn btn--primary") }}
+  </form>
+
+  <div class="auth-card__links">
+    <a href="{{ url_for('auth.signup') }}">Sign Up</a>
+    {% if as_admin %}
+      <a href="{{ url_for('auth.login') }}">Login as User</a>
+    {% else %}
+      <a href="{{ url_for('auth.login', as_admin=1) }}">Login as System Administrator</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

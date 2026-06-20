@@ -1,0 +1,50 @@
+{# Reusable toolbar (New + search + list/kanban toggle) for every module list view.
+   List/Kanban are two renderings of the SAME data. Each module template renders its own table
+   rows / kanban cards inline; this file provides the shared toolbar + kanban shell. #}
+
+{% macro toolbar(title, base_endpoint, view, search, create_url, can_create, kanban=True, mine=None) %}
+<div class="list-toolbar">
+  {% if can_create %}<a class="btn btn--primary" href="{{ create_url }}">New</a>{% endif %}
+  <span class="list-toolbar__title">{{ title }}</span>
+
+  <form class="list-search" method="get" action="{{ url_for(base_endpoint) }}">
+    {% if mine %}<input type="hidden" name="mine" value="1">{% endif %}
+    <input type="hidden" name="view" value="{{ view }}">
+    <input class="input list-search__input" type="search" name="q" value="{{ search or '' }}"
+           placeholder="Search reference / contact…">
+    <button class="btn" type="submit">Search</button>
+  </form>
+
+  {% if kanban %}
+  <span class="view-toggle">
+    <a class="view-toggle__btn {{ 'view-toggle__btn--active' if view=='list' }}"
+       href="{{ url_for(base_endpoint, view='list', q=search, mine=mine) }}" title="List view">&#9776;</a>
+    <a class="view-toggle__btn {{ 'view-toggle__btn--active' if view=='kanban' }}"
+       href="{{ url_for(base_endpoint, view='kanban', q=search, mine=mine) }}" title="Kanban view">&#9783;</a>
+  </span>
+  {% endif %}
+</div>
+{% endmacro %}
+
+
+{# Kanban shell: caller passes the ordered status list + a `card` macro rendered per record.
+   Usage:
+     {% call(record) ov.kanban_board(records, statuses) %}...card markup using `record`...{% endcall %}
+#}
+{% macro kanban_board(records, statuses) %}
+<div class="kanban">
+  {% for status in statuses %}
+    <div class="kanban__col">
+      <div class="kanban__col-head">
+        {{ status.replace('_',' ')|title }}
+        <span class="kanban__count">
+          {{ records|selectattr('status','equalto',status)|list|length }}
+        </span>
+      </div>
+      {% for record in records if record.status == status %}
+        {{ caller(record) }}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+{% endmacro %}

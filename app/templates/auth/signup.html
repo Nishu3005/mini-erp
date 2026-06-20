@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h1 class="auth-card__title">Sign up</h1>
+
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    {% for field in [form.login_id, form.email, form.password, form.confirm] %}
+      <label>{{ field.label }}</label>
+      {{ field(class="input") }}
+      {% for err in field.errors %}<small class="field-error">{{ err }}</small>{% endfor %}
+    {% endfor %}
+
+    {{ form.submit(class="btn btn--primary") }}
+  </form>
+
+  <div class="auth-card__links">
+    <a href="{{ url_for('auth.login') }}">Back to Login</a>
+  </div>
+</div>
+{% endblock %}

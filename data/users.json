@@ -1,0 +1,82 @@
+[
+  {
+    "login_id": "admin1",
+    "email": "admin@shivfurniture.in",
+    "password": "Admin@123",
+    "name": "System Administrator",
+    "address": "Head Office, Ahmedabad, 380001",
+    "mobile": "+919800000000",
+    "position": "Administrator",
+    "is_admin": true
+  },
+  {
+    "login_id": "owner.shiv",
+    "email": "shiv@shivfurniture.in",
+    "password": "Owner@123",
+    "name": "Shiv Patel",
+    "address": "Bodakdev, Ahmedabad, 380054",
+    "mobile": "+919811111111",
+    "position": "Business Owner",
+    "rights": "owner"
+  },
+  {
+    "login_id": "mgr.mehul",
+    "email": "mehul@shivfurniture.in",
+    "password": "Manager@123",
+    "name": "Mehul Shah",
+    "address": "Satellite, Ahmedabad, 380015",
+    "mobile": "+919822222222",
+    "position": "Operations Manager",
+    "rights": "manager"
+  },
+  {
+    "login_id": "sales.ravi",
+    "email": "ravi@shivfurniture.in",
+    "password": "Sales@123",
+    "name": "Ravi Jadeja",
+    "address": "Maninagar, Ahmedabad, 380008",
+    "mobile": "+919833333333",
+    "position": "Sales Executive",
+    "rights": "sales"
+  },
+  {
+    "login_id": "sales.salman",
+    "email": "salman@shivfurniture.in",
+    "password": "Sales@123",
+    "name": "Salman Sheikh",
+    "address": "Vastrapur, Ahmedabad, 380015",
+    "mobile": "+919844444444",
+    "position": "Sales Executive",
+    "rights": "sales"
+  },
+  {
+    "login_id": "sales.priya",
+    "email": "priya@shivfurniture.in",
+    "password": "Sales@123",
+    "name": "Priya Nair",
+    "address": "Navrangpura, Ahmedabad, 380009",
+    "mobile": "+919855555555",
+    "position": "Sales Executive",
+    "rights": "sales"
+  },
+  {
+    "login_id": "purchase.vijay",
+    "email": "vijay@shivfurniture.in",
+    "password": "Purchase@123",
+    "name": "Vijay Sharma",
+    "address": "Naroda, Ahmedabad, 382330",
+    "mobile": "+919866666666",
+    "position": "Purchase Officer",
+    "rights": "purchase"
+  },
+  {
+    "login_id": "mfg.dinesh",
+    "email": "dinesh@shivfurniture.in",
+    "password": "Mfg@1234",
+    "name": "Dinesh Patel",
+    "address": "Vatva GIDC, Ahmedabad, 382445",
+    "mobile": "+919877777777",
+    "position": "Production Supervisor",
+    "rights": "manufacturing"
+  }
+]

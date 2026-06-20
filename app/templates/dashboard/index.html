@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% macro pill(card, scope, status, label, n) %}
+  {% if card.endpoint %}
+    {% set args = {'status': status} if status not in ['late','to_close'] else {'filter': status} %}
+    {% if scope == 'my' %}{% set _ = args.update({'mine': 1}) %}{% endif %}
+    <a class="dash-pill {{ 'dash-pill--late' if status=='late' }}"
+       href="{{ url_for(card.endpoint, **args) }}"><b>{{ n }}</b>{{ label }}</a>
+  {% else %}
+    <span class="dash-pill {{ 'dash-pill--late' if status=='late' }}"><b>{{ n }}</b>{{ label }}</span>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+<h1 class="page-title">Dashboard</h1>
+
+{% if not cards %}
+  <p class="muted">You don't have access to any modules yet. Ask an administrator to grant rights.</p>
+{% endif %}
+
+{% for card in cards %}
+  <section class="dash-card">
+    <h2 class="dash-card__title">{{ card.title }}</h2>
+    {% for scope in ['all', 'my'] %}
+      <div class="dash-row">
+        <span class="dash-row__scope">{{ 'All' if scope == 'all' else 'My' }}</span>
+        {% for status, label, n in card.data[scope] %}
+          {{ pill(card, scope, status, label, n) }}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </section>
+{% endfor %}
+{% endblock %}

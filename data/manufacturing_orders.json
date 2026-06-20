@@ -1,0 +1,47 @@
+[
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 10,
+    "assignee": "mfg.dinesh",
+    "status": "confirmed",
+    "created_offset_days": -2,
+    "schedule_offset_days": 3
+  },
+  {
+    "finished_product": "Dining Table",
+    "bom": "Dining Table",
+    "quantity": 5,
+    "assignee": "mfg.dinesh",
+    "status": "in_progress",
+    "created_offset_days": -4,
+    "schedule_offset_days": 1
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 6,
+    "assignee": "mfg.dinesh",
+    "status": "done",
+    "created_offset_days": -9,
+    "schedule_offset_days": -2
+  },
+  {
+    "finished_product": "Dining Table",
+    "bom": "Dining Table",
+    "quantity": 8,
+    "assignee": "mfg.dinesh",
+    "status": "draft",
+    "created_offset_days": 0,
+    "schedule_offset_days": 5
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 4,
+    "assignee": "mfg.dinesh",
+    "status": "confirmed",
+    "created_offset_days": -8,
+    "schedule_offset_days": -1
+  }
+]

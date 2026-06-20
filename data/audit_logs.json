@@ -1,0 +1,18 @@
+[
+  { "offset_days": -16, "user": "sales.ravi",      "module": "product",       "record_type": "Product",             "record_ref": "PRD-000034", "action": "write",  "field": "Sales Price",   "old": "120.00", "new": "135.00" },
+  { "offset_days": -16, "user": "sales.salman",    "module": "sales",         "record_type": "Item",                "record_ref": "ITEM-0102",  "action": "write",  "field": "Cost Price",    "old": "80.00",  "new": "85.00" },
+  { "offset_days": -15, "user": "purchase.vijay",  "module": "purchase",      "record_type": "Purchase Order",      "record_ref": "PO-000087",  "action": "create", "field": null,            "old": null,     "new": null },
+  { "offset_days": -15, "user": "owner.shiv",      "module": "product",       "record_type": "Item",                "record_ref": "ITEM-0456",  "action": "write",  "field": "Cost Price",    "old": "45.00",  "new": "50.00" },
+  { "offset_days": -14, "user": "mfg.dinesh",      "module": "manufacturing", "record_type": "BoM",                 "record_ref": "BOM-000015", "action": "create", "field": null,            "old": null,     "new": null },
+  { "offset_days": -14, "user": "sales.ravi",      "module": "sales",         "record_type": "Item",                "record_ref": "ITEM-0102",  "action": "write",  "field": "Sales Price",   "old": "110.00", "new": "120.00" },
+  { "offset_days": -12, "user": "purchase.vijay",  "module": "purchase",      "record_type": "Product",             "record_ref": "PRD-000021", "action": "delete", "field": null,            "old": null,     "new": null },
+  { "offset_days": -11, "user": "owner.shiv",      "module": "manufacturing", "record_type": "Manufacturing Order", "record_ref": "MO-000022", "action": "write",  "field": "Demand",        "old": "80",     "new": "100" },
+  { "offset_days": -10, "user": "mfg.dinesh",      "module": "manufacturing", "record_type": "Material Consumption","record_ref": "MC-000055", "action": "write",  "field": "Consumed Qty",  "old": "45",     "new": "55" },
+  { "offset_days": -9,  "user": "sales.priya",     "module": "sales",         "record_type": "Sales Order",         "record_ref": "SO-000003",  "action": "status_change", "field": "status", "old": "confirmed", "new": "fully_delivered" },
+  { "offset_days": -8,  "user": "purchase.vijay",  "module": "purchase",      "record_type": "Purchase Order",      "record_ref": "PO-000003",  "action": "receive", "field": "received_qty", "old": "0", "new": "60" },
+  { "offset_days": -6,  "user": "mfg.dinesh",      "module": "manufacturing", "record_type": "Manufacturing Order", "record_ref": "MO-000003", "action": "produce", "field": "status", "old": "in_progress", "new": "done" },
+  { "offset_days": -5,  "user": "mgr.mehul",       "module": "product",       "record_type": "Product",             "record_ref": "PRD-000006", "action": "write",  "field": "On Hand Qty",   "old": "5",      "new": "8" },
+  { "offset_days": -3,  "user": "sales.salman",    "module": "sales",         "record_type": "Sales Order",         "record_ref": "SO-000002",  "action": "deliver", "field": "delivered_qty", "old": "0", "new": "2" },
+  { "offset_days": -2,  "user": "owner.shiv",      "module": "product",       "record_type": "Product",             "record_ref": "PRD-000008", "action": "create", "field": null,            "old": null,     "new": null },
+  { "offset_days": -1,  "user": "sales.ravi",      "module": "sales",         "record_type": "Sales Order",         "record_ref": "SO-000001",  "action": "status_change", "field": "status", "old": "draft", "new": "confirmed" }
+]

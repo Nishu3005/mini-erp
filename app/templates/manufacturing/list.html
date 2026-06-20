@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "partials/order_views.html" as ov %}
+{% block title %}Manufacturing Orders{% endblock %}
+
+{% set badge = {'draft':'draft','confirmed':'confirmed','in_progress':'partial',
+  'done':'done','cancelled':'cancelled'} %}
+{% set statuses = ['draft','confirmed','in_progress','done','cancelled'] %}
+{% macro status_badge(s) %}<span class="status status--{{ badge.get(s,'draft') }}">{{ s.replace('_',' ')|title }}</span>{% endmacro %}
+
+{% block content %}
+{{ ov.toolbar('Manufacturing Orders', 'manufacturing.list_view', view, search,
+              url_for('manufacturing.create'), access_can('manufacturing','create'), mine=mine) }}
+
+<div class="filter-bar">
+  {% set chips = [('', 'All'), ('draft','Draft'), ('confirmed','Confirmed'),
+                  ('in_progress','In-Progress'), ('done','Done')] %}
+  {% for value, lbl in chips %}
+    {% set is_active = (not value and not status) or (status == value) %}
+    <a class="filter-chip {{ 'filter-chip--active' if is_active }}"
+       href="{{ url_for('manufacturing.list_view', status=value or none, mine=mine, view=view) }}">{{ lbl }}</a>
+  {% endfor %}
+</div>
+
+{% if view == 'kanban' %}
+  {% call(o) ov.kanban_board(orders, statuses) %}
+    <a class="kanban__card" href="{{ url_for('manufacturing.form', order_id=o.id) }}">
+      <div class="kanban__card-top"><b>{{ o.reference }}</b>{{ status_badge(o.status) }}</div>
+      <div>{{ o.finished_product.name }}</div>
+      <div class="muted">Qty {{ '%.2f'|format(o.quantity) }} · {{ o.component_status }}</div>
+    </a>
+  {% endcall %}
+{% else %}
+  <table class="list-table">
+    <thead><tr><th>Reference</th><th>Date</th><th>Finished Product</th><th>Component Status</th><th class="num">Quantity</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for o in orders %}
+        <tr class="row-link" tabindex="0" data-href="{{ url_for('manufacturing.form', order_id=o.id) }}"
+            onclick="window.location=this.dataset.href"
+            onkeydown="if(event.key==='Enter')window.location=this.dataset.href">
+          <td>{{ o.reference }}</td>
+          <td>{{ o.creation_date.strftime('%Y-%m-%d') if o.creation_date else '—' }}</td>
+          <td>{{ o.finished_product.name }}</td>
+          <td>{{ o.component_status }}</td>
+          <td class="num">{{ '%.2f'|format(o.quantity) }}</td>
+          <td>{{ status_badge(o.status) }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="muted">No manufacturing orders{% if status or search %} match{% endif %}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}

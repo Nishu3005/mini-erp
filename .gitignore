@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project DB
+*.db
+erp.db
+
+# uploaded user photos
+app/static/uploads/

@@ -1,0 +1,69 @@
+[
+  {
+    "customer": "Suzuki India Ltd.",
+    "salesperson": "sales.ravi",
+    "status": "confirmed",
+    "created_offset_days": -2,
+    "expected_offset_days": 2,
+    "lines": [
+      { "product": "Office Chair", "ordered_qty": 10, "delivered_qty": 0 }
+    ]
+  },
+  {
+    "customer": "MRF Ltd.",
+    "salesperson": "sales.salman",
+    "status": "partially_delivered",
+    "created_offset_days": -5,
+    "lines": [
+      { "product": "Wooden Table", "ordered_qty": 6, "delivered_qty": 2 },
+      { "product": "Office Chair", "ordered_qty": 12, "delivered_qty": 12 }
+    ]
+  },
+  {
+    "customer": "Reliance Retail",
+    "salesperson": "sales.priya",
+    "status": "fully_delivered",
+    "created_offset_days": -9,
+    "lines": [
+      { "product": "Door Frames", "ordered_qty": 20, "delivered_qty": 20 }
+    ]
+  },
+  {
+    "customer": "Decor Mart",
+    "salesperson": "sales.ravi",
+    "status": "draft",
+    "created_offset_days": 0,
+    "lines": [
+      { "product": "Dining Table", "ordered_qty": 4, "delivered_qty": 0 }
+    ]
+  },
+  {
+    "customer": "Urban Living Furnitures",
+    "salesperson": "sales.salman",
+    "status": "confirmed",
+    "created_offset_days": -12,
+    "expected_offset_days": -3,
+    "lines": [
+      { "product": "Dining Table", "ordered_qty": 10, "delivered_qty": 0 }
+    ]
+  },
+  {
+    "customer": "Krishna Interiors",
+    "salesperson": "sales.priya",
+    "status": "draft",
+    "created_offset_days": -1,
+    "lines": [
+      { "product": "Office Chair", "ordered_qty": 6, "delivered_qty": 0 },
+      { "product": "Wooden Table", "ordered_qty": 2, "delivered_qty": 0 }
+    ]
+  },
+  {
+    "customer": "Suzuki India Ltd.",
+    "salesperson": "sales.ravi",
+    "status": "cancelled",
+    "created_offset_days": -7,
+    "lines": [
+      { "product": "Lighting Frame", "ordered_qty": 30, "delivered_qty": 0 }
+    ]
+  }
+]
