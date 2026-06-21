@@ -8,6 +8,7 @@
 {% macro status_badge(s) %}<span class="status status--{{ badge.get(s,'draft') }}">{{ s.replace('_',' ')|title }}</span>{% endmacro %}
 
 {% block content %}
+{% include "partials/page_info.html" %}
 {% set illustration_page = "manufacturing" %}
 {{ ov.styles() }}
 <style>

@@ -1,0 +1,171 @@
+{# Reusable "What is this page?" info button + dialog.
+   Drop this near the top of any list/index page's content block:
+       {% include "partials/page_info.html" %}
+
+   The page key is inferred from the request blueprint (or, when going through the scoped
+   URL dispatcher which keeps endpoint = scoped.dispatch, from the URL path). Renders nothing
+   when no copy is registered for the current page. #}
+
+{% set _info_pages = {
+  "sales": {
+    "title": "Sales Orders",
+    "purpose": "Track every customer order from quote to delivery. Each confirmed line reserves stock so other modules can see what's already committed; the order's status drives the dashboard pills.",
+    "steps": [
+      "Click <b>New</b> and pick a customer + product lines (qty &times; unit price).",
+      "Hit <b>Confirm</b> on the form to reserve stock. If a line lacks free stock and the product is set to Procure-on-Demand, a PO (MTS) or MO (MTO) is auto-created.",
+      "When the goods leave the workshop, enter the delivered quantity and click <b>Deliver</b> — this debits On Hand via the stock ledger.",
+      "Use the <b>List</b> / <b>Kanban</b> toggle in the toolbar to switch views; filter by status from the dashboard pills."
+    ]
+  },
+  "purchase": {
+    "title": "Purchase Orders",
+    "purpose": "Order raw materials and finished goods from vendors. Receiving a PO is the only manual stock-in path; it writes a stock-ledger row and increases On Hand for every received product.",
+    "steps": [
+      "Click <b>New</b>, choose a vendor, add product lines with ordered quantity.",
+      "<b>Confirm</b> the PO to lock the lines and notify Manufacturing/Sales that stock is on the way.",
+      "When the shipment arrives, enter the received quantity per line and click <b>Receive</b> — this credits On Hand.",
+      "POs auto-created from a Sales Order MTS shortage appear in Draft; review the lines and confirm them."
+    ]
+  },
+  "manufacturing": {
+    "title": "Manufacturing Orders",
+    "purpose": "Build finished goods from a Bill of Materials. Each MO consumes components from stock and produces the finished good; per-Work-Order operator routing tracks the shop floor.",
+    "steps": [
+      "Click <b>New</b>, pick a finished product + quantity. A BoM is auto-suggested; components and work orders are populated.",
+      "<b>Confirm</b> the MO. Each Work Order starts in <b>Todo</b>.",
+      "Operators click <b>Start</b> when they begin a step and <b>Finish</b> when done — Real Duration is auto-captured.",
+      "Once every Work Order is Done, click <b>Produce</b> to consume components and add the finished good to stock."
+    ]
+  },
+  "bom": {
+    "title": "Bills of Materials",
+    "purpose": "Recipes that link a finished product to the components and operations needed to build it. Manufacturing Orders pull their lines from the BoM you create here.",
+    "steps": [
+      "Click <b>New</b> and pick the finished product + a base quantity (the per-batch yield).",
+      "Add component rows (raw materials × to-consume qty) and operation rows (work-center + expected minutes).",
+      "Save. The BoM is now selectable on the Manufacturing Order form; the MO scales components and operations by its own quantity."
+    ]
+  },
+  "product": {
+    "title": "Products",
+    "purpose": "The master record for every item the workshop buys, makes, or sells. On Hand and Free-to-Use quantities here drive every other module.",
+    "steps": [
+      "Click <b>New</b> to add a product. Set sales price / cost price and an opening On Hand if you have stock already.",
+      "Enable <b>Procure on Demand</b> + a method (Manufacturing or Purchase) to let Sales auto-create POs/MOs when free stock is short.",
+      "On-Hand is moved <i>only</i> by receive / produce / consume / deliver — to force a one-off change, use a Stock Adjustment from the product form."
+    ]
+  },
+  "audit": {
+    "title": "Audit Logs",
+    "purpose": "Admin-only, append-only history of every tracked field change across the app. Use it to investigate what changed, who changed it, and when.",
+    "steps": [
+      "Use the four stat cards at the top to see system-wide activity totals.",
+      "Filter by date range, user, module, or action with the filter bar — click <b>Filter</b> to apply, <b>Reset</b> to clear.",
+      "Each row shows the field that changed plus the old &rarr; new value. Per-record logs are also visible on each module's form view."
+    ]
+  },
+  "admin": {
+    "title": "User Management",
+    "purpose": "Admin-only screen for activating signups, granting/revoking access, and managing all user accounts and their per-module permissions.",
+    "steps": [
+      "Pending signups appear at the top — click <b>Approve</b> to activate or <b>Reject</b> to deny.",
+      "Click any active user to edit their profile and per-module access rights (view / create / edit / delete / approve / production_entry / edit_bom).",
+      "Use <b>New User</b> to create an account directly (skipping the signup flow). Promote a user to admin with the <b>Is Admin</b> flag."
+    ]
+  }
+} %}
+
+{# Resolve the current page key: endpoint blueprint first, then the URL path after /<role>/<username>/. #}
+{# Some URL prefixes don't match the blueprint name exactly (e.g. /products → product). #}
+{% set _path_alias = {'products': 'product', 'boms': 'bom'} %}
+{% set _bp = (request.endpoint or '').split('.', 1)[0] %}
+{% set _info = _info_pages.get(_bp) %}
+{% if not _info %}
+  {% set _parts = (request.path or '').strip('/').split('/') %}
+  {% set _roles = ['admin','sales','inventory','manufacturing','purchase','owner'] %}
+  {% if _parts|length >= 2 and _parts[0] in _roles %}
+    {% set _parts = _parts[2:] %}
+  {% endif %}
+  {% if _parts %}
+    {% set _head = _path_alias.get(_parts[0], _parts[0]) %}
+    {% set _info = _info_pages.get(_head) %}
+  {% endif %}
+{% endif %}
+
+{% if _info %}
+<style>
+  /* Info button + dialog — page-scoped to list views that include this partial. */
+  .page-info-wrap { position: relative; }
+  .page-info-btn {
+    position: absolute; top: -8px; right: -8px;
+    width: 30px; height: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--ink); border-radius: var(--r-full);
+    background: var(--canvas); color: var(--ink);
+    font-weight: 800; font-size: 14px; line-height: 1;
+    cursor: pointer; font-family: Georgia, "Times New Roman", serif; font-style: italic;
+    z-index: 5;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .page-info-btn:hover { background: var(--primary); }
+
+  .page-info-dialog {
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+    padding: 0; max-width: 560px; width: calc(100% - 32px);
+    background: var(--surface-card); color: var(--ink);
+  }
+  .page-info-dialog::backdrop { background: rgba(0,0,0,.4); }
+  .page-info-dialog__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--md) var(--lg);
+    border-bottom: 1px solid var(--hairline-strong);
+    font-weight: 700; font-size: 16px;
+  }
+  .page-info-dialog__body {
+    padding: var(--md) var(--lg) var(--lg);
+    font-size: 14px; line-height: 1.55;
+  }
+  .page-info-dialog__body p { margin: 0 0 var(--sm); color: var(--charcoal); }
+  .page-info-dialog__body ol { margin: 0; padding-left: 20px; color: var(--charcoal); }
+  .page-info-dialog__body li { margin-bottom: 8px; }
+  .page-info-dialog__heading {
+    font-weight: 700; color: var(--ink); margin: var(--md) 0 var(--xs);
+  }
+  .page-info-dialog__close {
+    background: none; border: none; font-size: 22px; cursor: pointer;
+    color: var(--ink); line-height: 1; padding: 0 4px;
+  }
+</style>
+
+<button class="page-info-btn" type="button" aria-label="What is this page?" title="What is this page?"
+        onclick="document.getElementById('pageInfoDialog').showModal()">i</button>
+
+<dialog id="pageInfoDialog" class="page-info-dialog">
+  <div class="page-info-dialog__head">
+    <span>About: {{ _info.title }}</span>
+    <button class="page-info-dialog__close" type="button" aria-label="Close"
+            onclick="document.getElementById('pageInfoDialog').close()">&times;</button>
+  </div>
+  <div class="page-info-dialog__body">
+    <p>{{ _info.purpose }}</p>
+    <p class="page-info-dialog__heading">How to use</p>
+    <ol>
+      {% for s in _info.steps %}<li>{{ s|safe }}</li>{% endfor %}
+    </ol>
+  </div>
+</dialog>
+
+<script>
+  // Anchor the info button to the first toolbar / page-title / stat-cards block so it sits
+  // in that container's top-right corner. Falls back to the main element.
+  (function () {
+    var btn = document.querySelector('.page-info-btn');
+    if (!btn) return;
+    var anchor = document.querySelector('.list-toolbar, .stat-cards, .page-title, main.container');
+    if (!anchor) return;
+    if (getComputedStyle(anchor).position === 'static') anchor.classList.add('page-info-wrap');
+    anchor.appendChild(btn);
+  })();
+</script>
+{% endif %}
