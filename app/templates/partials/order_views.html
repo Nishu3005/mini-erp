@@ -1,13 +1,82 @@
-{# Reusable toolbar (New + search + list/kanban toggle) for every module list view.
-   List/Kanban are two renderings of the SAME data. Each module template renders its own table
-   rows / kanban cards inline; this file provides the shared toolbar + kanban shell. #}
+{# Reusable toolbar (New + search + list/kanban toggle) + kanban shell for module list views.
+
+   This is a MACROS-only file. To get the visual styling, a page must include `ov.styles()` ONCE
+   near the top of its content block — that emits the internal CSS for the toolbar + kanban. The
+   pattern keeps "every page owns its CSS" while letting the shared markup carry the shared rules.
+
+   Three macros:
+     - styles()                emit the toolbar + kanban CSS (call once per page)
+     - toolbar(...)            the New + search + list/kanban toggle bar
+     - kanban_board(records, statuses) the kanban shell; caller provides the card markup #}
+
+
+{% macro styles() %}
+<style>
+  /* ---- list toolbar ---- */
+  .list-toolbar {
+    display: flex; align-items: center; gap: var(--md);
+    background: var(--canvas);
+    border: 1px solid var(--hairline-strong);
+    padding: var(--sm) var(--md);
+    margin-bottom: var(--md);
+  }
+  .list-toolbar__title { font-weight: 700; color: var(--ink); }
+  .list-search { display: flex; gap: var(--xs); margin-left: auto; }
+  .list-search__input { height: 40px; min-width: 220px; }
+
+  .view-toggle { display: flex; gap: 2px; }
+  .view-toggle__btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--stone); border-radius: var(--r-xs);
+    text-decoration: none; color: var(--ink); font-size: 18px;
+  }
+  .view-toggle__btn:hover { background: var(--surface-soft); }
+  .view-toggle__btn--active { background: var(--primary); border-color: var(--primary-deep); }
+
+  /* ---- kanban board ---- */
+  .kanban {
+    display: flex; gap: var(--md);
+    overflow-x: auto; padding-bottom: var(--md);
+  }
+  .kanban__col {
+    flex: 0 0 240px;
+    background: var(--surface-soft); border-radius: var(--r-md);
+    padding: var(--xs); min-height: 120px;
+  }
+  .kanban__col-head {
+    font-weight: 700;
+    padding: var(--xs) var(--sm);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .kanban__count {
+    background: var(--stone);
+    border-radius: var(--r-full);
+    padding: 1px 8px; font-size: 12px;
+  }
+  .kanban__card {
+    display: block;
+    background: var(--surface-card);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-sm);
+    padding: var(--sm); margin-bottom: var(--xs);
+    text-decoration: none; color: var(--ink);
+  }
+  .kanban__card:hover { border-color: var(--primary-deep); }
+  .kanban__card-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+</style>
+{% endmacro %}
+
 
 {% macro toolbar(title, base_endpoint, view, search, create_url, can_create, kanban=True, mine=None) %}
 <div class="list-toolbar">
   {% if can_create %}<a class="btn btn--primary" href="{{ create_url }}">New</a>{% endif %}
   <span class="list-toolbar__title">{{ title }}</span>
 
-  <form class="list-search" method="get" action="{{ url_for(base_endpoint) }}">
+  <form class="list-search" method="get" action="{{ route_for(base_endpoint) }}">
     {% if mine %}<input type="hidden" name="mine" value="1">{% endif %}
     <input type="hidden" name="view" value="{{ view }}">
     <input class="input list-search__input" type="search" name="q" value="{{ search or '' }}"
@@ -18,9 +87,9 @@
   {% if kanban %}
   <span class="view-toggle">
     <a class="view-toggle__btn {{ 'view-toggle__btn--active' if view=='list' }}"
-       href="{{ url_for(base_endpoint, view='list', q=search, mine=mine) }}" title="List view">&#9776;</a>
+       href="{{ route_for(base_endpoint, view='list', q=search, mine=mine) }}" title="List view">&#9776;</a>
     <a class="view-toggle__btn {{ 'view-toggle__btn--active' if view=='kanban' }}"
-       href="{{ url_for(base_endpoint, view='kanban', q=search, mine=mine) }}" title="Kanban view">&#9783;</a>
+       href="{{ route_for(base_endpoint, view='kanban', q=search, mine=mine) }}" title="Kanban view">&#9783;</a>
   </span>
   {% endif %}
 </div>

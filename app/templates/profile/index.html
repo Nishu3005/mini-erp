@@ -2,13 +2,92 @@
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
-<h1 class="page-title">User Login Detail Management</h1>
+<style>
+  /* profile page: editable identity card. Email + Position render read-only with a lock hint. */
+  .prof-title { font-size: 22px; font-weight: 700; color: var(--ink); margin: 0 0 4px; }
+  .prof-subtitle { color: var(--mute); margin: 0 0 var(--lg); font-size: 14px; }
 
-<form method="post" enctype="multipart/form-data" class="form-card">
+  .prof-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xl); margin-bottom: var(--lg);
+  }
+
+  .prof { display: flex; gap: var(--xl); flex-wrap: wrap; }
+  .prof__fields {
+    flex: 1 1 360px;
+    display: grid; grid-template-columns: 160px 1fr;
+    column-gap: var(--md); row-gap: 6px;
+    align-items: center;
+  }
+  .prof__fields label {
+    font-size: 13px; font-weight: 600; color: var(--charcoal);
+  }
+  .prof__fields .input {
+    width: 100%; height: 42px;
+    padding: 8px 12px; border: 1px solid var(--stone);
+    font-size: 15px; color: var(--ink); background: var(--canvas);
+  }
+  .prof__fields .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+  .prof__fields .input.readonly,
+  .prof__fields .input[readonly] {
+    background: var(--surface-soft); color: var(--mute); cursor: not-allowed;
+  }
+  .prof__lock {
+    display: inline-block; margin-left: 6px;
+    font-size: 11px; padding: 1px 6px; border-radius: var(--r-pill);
+    background: var(--stone); color: var(--ink);
+    vertical-align: middle;
+  }
+
+  .prof__photo {
+    display: flex; flex-direction: column; align-items: center; gap: var(--sm);
+    flex: 0 0 200px;
+  }
+  .prof__avatar {
+    width: 160px; height: 160px; object-fit: cover;
+    border: 1px solid var(--hairline-strong); border-radius: var(--r-md);
+  }
+  .prof__avatar--empty {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ash); background: var(--surface-soft);
+    font-size: 13px;
+  }
+  .prof__upload {
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    color: var(--link);
+    border: 1px solid var(--stone); padding: 6px 12px; border-radius: var(--r-xs);
+    background: var(--canvas);
+  }
+  .prof__upload:hover { background: var(--surface-soft); }
+  .prof__filename { font-size: 12px; color: var(--mute); min-height: 16px; text-align: center; }
+
+  .prof__bar {
+    display: flex; align-items: center; gap: var(--sm);
+    padding-top: var(--md); margin-top: var(--md);
+    border-top: 1px solid var(--hairline);
+  }
+  .prof__bar .btn {
+    padding: 10px 18px; border: 1px solid var(--stone); background: var(--canvas);
+    color: var(--ink); text-decoration: none; cursor: pointer;
+    font-size: 14px; border-radius: var(--r-xs);
+  }
+  .prof__bar .btn:hover { background: var(--surface-soft); }
+  .prof__bar .btn--primary {
+    background: var(--ink); color: var(--on-dark); border-color: var(--ink);
+    font-weight: 700;
+  }
+  .prof__bar .btn--primary:hover { background: var(--surface-deep, #111); }
+  .prof__hint { font-size: 13px; color: var(--mute); margin: var(--md) 0 0; }
+</style>
+
+<h1 class="prof-title">User Login Detail Management</h1>
+<p class="prof-subtitle">Edit your name, address, mobile and photo. Email and Position are locked.</p>
+
+<form method="post" enctype="multipart/form-data" class="prof-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-  <div class="profile">
-    <div class="profile__fields">
+  <div class="prof">
+    <div class="prof__fields">
       <label>Name</label>
       <input class="input" name="name" value="{{ user.name or '' }}">
 
@@ -18,33 +97,31 @@
       <label>Mobile Number</label>
       <input class="input" name="mobile" value="{{ user.mobile or '' }}">
 
-      <label>Email ID</label>
-      <input class="input readonly" value="{{ user.email }}" readonly title="Email cannot be changed">
+      <label>Email ID <span class="prof__lock" title="Cannot be changed">locked</span></label>
+      <input class="input readonly" value="{{ user.email }}" readonly>
 
-      <label>Position</label>
-      <input class="input readonly" value="{{ user.position or '—' }}" readonly
-             title="Only a System Administrator can change Position">
+      <label>Position <span class="prof__lock" title="Admin-only">admin-only</span></label>
+      <input class="input readonly" value="{{ user.position or '—' }}" readonly>
     </div>
 
-    <div class="profile__photo">
+    <div class="prof__photo">
       {% if user.photo_path %}
-        <img class="profile__avatar" src="{{ url_for('static', filename=user.photo_path) }}" alt="avatar">
+        <img class="prof__avatar" src="{{ route_for('static', filename=user.photo_path) }}" alt="avatar">
       {% else %}
-        <div class="profile__avatar profile__avatar--empty">No photo</div>
+        <div class="prof__avatar prof__avatar--empty">No photo</div>
       {% endif %}
-      <label class="profile__upload">Change photo
+      <label class="prof__upload">Change photo
         <input type="file" name="photo" accept="image/*" hidden
-               onchange="this.form.querySelector('[name=name]').focus()">
+               onchange="this.closest('.prof__photo').querySelector('.prof__filename').textContent = this.files[0] ? this.files[0].name : ''">
       </label>
+      <div class="prof__filename"></div>
     </div>
   </div>
 
-  <div class="form-card__bar" style="border-top:1px solid var(--hairline); border-bottom:none; margin-top:var(--md)">
-    <a class="btn" href="{{ url_for('dashboard.index') }}">Back</a>
+  <div class="prof__bar">
+    <a class="btn" href="{{ route_for('dashboard.index') }}">Back</a>
     <button class="btn btn--primary" type="submit">Save</button>
+    <span class="prof__hint">Email is the identity that created your account. Position is set by a System Administrator.</span>
   </div>
-  <p class="muted" style="font-size:13px">
-    Email and Position are read-only. Position is set by a System Administrator.
-  </p>
 </form>
 {% endblock %}

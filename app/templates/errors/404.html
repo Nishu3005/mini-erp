@@ -1,9 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Not Found{% endblock %}
+
 {% block content %}
-<div class="auth-card">
-  <h1 class="auth-card__title">404 — Not Found</h1>
-  <p class="muted">That record or page doesn't exist.</p>
-  <div class="auth-card__links"><a href="{{ url_for('dashboard.index') }}">Back to Dashboard</a></div>
+<style>
+  /* 404 card: small framed card, calmer than the 403 page (404 ≠ security event) */
+  .nf-card {
+    max-width: 460px; margin: var(--xxxl) auto;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xxl);
+  }
+  .nf-card__code {
+    display: inline-block; padding: 2px 10px; border-radius: var(--r-xs);
+    background: var(--mute); color: var(--on-dark);
+    font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .nf-card__title { font-size: 24px; font-weight: 700; margin: var(--sm) 0 var(--md); color: var(--ink); }
+  .nf-card__msg { color: var(--mute); margin: 0 0 var(--md); }
+  .nf-card__hint { color: var(--charcoal); font-size: 13px; margin: 0 0 var(--md); }
+  .nf-card__back { color: var(--link); text-decoration: none; font-size: 14px; }
+  .nf-card__back:hover { text-decoration: underline; }
+</style>
+
+{% set home = url_for('admin.dashboard') if current_user.is_authenticated and current_user.is_admin
+              else (url_for('auth.pending') if current_user.is_authenticated and current_user.status != 'active'
+                    else url_for('dashboard.index') if current_user.is_authenticated
+                    else url_for('landing.index')) %}
+
+<div class="nf-card">
+  <span class="nf-card__code">404</span>
+  <h1 class="nf-card__title">Not Found</h1>
+  <p class="nf-card__msg">That record or page doesn't exist.</p>
+  <p class="nf-card__hint">It might have been moved, renamed, or never existed in the first place.</p>
+  <a class="nf-card__back" href="{{ home }}">← Back home</a>
 </div>
 {% endblock %}

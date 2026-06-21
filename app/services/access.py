@@ -1,14 +1,18 @@
 """Access-rights service. The ONLY read path for authorization checks.
 
-See spec/access-rights.md. Admin users bypass all checks. Otherwise the (user, module) row's
-flags decide. Deny by default.
+Resolution (spec/rbac-redesign.md §3):
+  1. not logged in / not an active member (pending/rejected) -> deny
+  2. admin -> allow everything
+  3. a per-user access_right OVERRIDE row for the module -> use its flag
+  4. otherwise fall back to the user's ROLE default (services/roles.py)
+Deny by default.
 """
 from functools import wraps
 
 from flask import abort
 from flask_login import current_user
 
-from app.models.user import AccessRight
+from app.services.roles import role_allows
 
 # action -> the AccessRight flag that grants it
 _ACTION_FLAG = {
@@ -21,19 +25,28 @@ _ACTION_FLAG = {
     "production_entry": "can_production_entry",
     "edit_bom": "can_edit_bom",
 }
+# normalize the two action aliases to their role-matrix name
+_ROLE_ACTION = {"confirm": "approve"}
 
 
 def can(user, module: str, action: str) -> bool:
     """True if `user` may perform `action` on `module`."""
     if user is None or not getattr(user, "is_authenticated", False):
         return False
-    if getattr(user, "is_admin", False):
-        return True
-    right = next((r for r in user.access_rights if r.module == module), None)
-    if right is None:
+    # pending / rejected users (non-admin) get nothing
+    if not getattr(user, "is_active_member", True):
         return False
-    flag = _ACTION_FLAG.get(action)
-    return bool(flag and getattr(right, flag, False))
+    if getattr(user, "is_admin", False) or getattr(user, "role", None) == "admin":
+        return True
+
+    # per-user override row wins when present
+    right = next((r for r in user.access_rights if r.module == module), None)
+    if right is not None:
+        flag = _ACTION_FLAG.get(action)
+        return bool(flag and getattr(right, flag, False))
+
+    # else fall back to the role default
+    return role_allows(getattr(user, "role", None), module, _ROLE_ACTION.get(action, action))
 
 
 def can_current(module: str, action: str) -> bool:

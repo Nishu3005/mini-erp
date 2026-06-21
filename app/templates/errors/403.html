@@ -1,9 +1,33 @@
 {% extends "base.html" %}
 {% block title %}Forbidden{% endblock %}
+
 {% block content %}
-<div class="auth-card">
-  <h1 class="auth-card__title">403 — Forbidden</h1>
-  <p class="muted">You don't have permission to access this page.</p>
-  <div class="auth-card__links"><a href="{{ url_for('dashboard.index') }}">Back to Dashboard</a></div>
+<style>
+  /* error-card: small framed card, used for 403/404/auth-style pages */
+  .error-card {
+    max-width: 420px; margin: var(--xxxl) auto;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xxl);
+  }
+  .error-card__code {
+    display: inline-block; padding: 2px 10px; border-radius: var(--r-xs);
+    background: var(--error); color: var(--on-dark);
+    font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .error-card__title { font-size: 24px; font-weight: 700; margin: var(--sm) 0 var(--md); color: var(--ink); }
+  .error-card__msg { color: var(--mute); margin: 0 0 var(--md); }
+  .error-card__back { color: var(--link); text-decoration: none; font-size: 14px; }
+</style>
+
+{% set home = url_for('admin.dashboard') if current_user.is_authenticated and current_user.is_admin
+              else (url_for('auth.pending') if current_user.is_authenticated and current_user.status != 'active'
+                    else url_for('dashboard.index') if current_user.is_authenticated
+                    else url_for('auth.login')) %}
+
+<div class="error-card">
+  <span class="error-card__code">403</span>
+  <h1 class="error-card__title">Forbidden</h1>
+  <p class="error-card__msg">You don't have permission to access this page.</p>
+  <a class="error-card__back" href="{{ home }}">← Back</a>
 </div>
 {% endblock %}

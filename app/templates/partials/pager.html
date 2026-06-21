@@ -1,0 +1,51 @@
+{# Reusable pager partial. Templates include it after their table.
+   Expects `page_meta` in context (from services.pagination.paginate). The pager preserves the
+   current request's query-string so filter/search/view state survives page changes. #}
+{% if page_meta and page_meta.pages > 1 %}
+<style>
+  .pager {
+    display: flex; align-items: center; gap: var(--xs);
+    margin: var(--md) 0; flex-wrap: wrap;
+  }
+  .pager__info { margin-right: auto; color: var(--mute); font-size: 13px; }
+  .pager__btn {
+    padding: 6px 12px; border: 1px solid var(--stone); border-radius: var(--r-xs);
+    text-decoration: none; color: var(--ink); font-size: 13px; background: var(--canvas);
+    min-width: 32px; text-align: center;
+  }
+  .pager__btn:hover { background: var(--surface-soft); }
+  .pager__btn--active {
+    background: var(--primary); border-color: var(--primary-deep);
+    font-weight: 700; color: var(--on-primary);
+  }
+  .pager__btn--ghost { border-color: transparent; color: var(--mute); cursor: default; }
+</style>
+{% set args = request.args.to_dict() %}
+<nav class="pager" aria-label="Pagination">
+  <span class="pager__info">
+    {{ page_meta.from_row }}–{{ page_meta.to_row }} of {{ page_meta.total }}
+  </span>
+  {% if page_meta.has_prev %}
+    {% set _ = args.update({'page': page_meta.prev_page}) %}
+    <a class="pager__btn" href="?{{ args|urlencode }}">←</a>
+  {% else %}
+    <span class="pager__btn pager__btn--ghost">←</span>
+  {% endif %}
+
+  {# show up to 7 pages around the current page #}
+  {% set start = [1, page_meta.page - 3]|max %}
+  {% set end = [page_meta.pages, start + 6]|min %}
+  {% for p in range(start, end + 1) %}
+    {% set _ = args.update({'page': p}) %}
+    <a class="pager__btn {{ 'pager__btn--active' if p == page_meta.page }}"
+       href="?{{ args|urlencode }}">{{ p }}</a>
+  {% endfor %}
+
+  {% if page_meta.has_next %}
+    {% set _ = args.update({'page': page_meta.next_page}) %}
+    <a class="pager__btn" href="?{{ args|urlencode }}">→</a>
+  {% else %}
+    <span class="pager__btn pager__btn--ghost">→</span>
+  {% endif %}
+</nav>
+{% endif %}

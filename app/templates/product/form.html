@@ -2,11 +2,69 @@
 {% block title %}{{ product.name if product else 'New Product' }}{% endblock %}
 
 {% block content %}
+<style>
+  /* product/form — editor with a conditional "Procurement" subform that toggles via small inline JS
+     on the procure_on_demand checkbox. */
+
+  .form-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xl); margin-bottom: var(--lg);
+  }
+  .form-card__bar {
+    display: flex; align-items: center; gap: var(--sm); flex-wrap: wrap;
+    padding-bottom: var(--md); margin-bottom: var(--md);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .form-grid {
+    display: grid; grid-template-columns: 180px 1fr;
+    column-gap: var(--md); row-gap: 6px;
+    align-items: center; margin-bottom: var(--md);
+  }
+  .form-grid label { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+  .form-grid input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+  /* the procurement subform is visually indented + slightly muted, so it reads as "conditional" */
+  #proc {
+    padding: var(--md) var(--lg);
+    background: var(--surface-soft);
+    border-left: 3px solid var(--primary);
+    margin-top: var(--xs);
+  }
+
+  .ref-badge {
+    border: 1px dashed var(--ink); border-radius: var(--r-xs);
+    padding: 4px 12px; font-weight: 700; font-size: 13px; color: var(--ink);
+    letter-spacing: .04em;
+  }
+
+  .input {
+    display: block; width: 100%; height: 40px;
+    padding: 8px 12px; border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 15px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+  /* the Free To Use field is computed; show it locked */
+  .input.readonly, .input[readonly] {
+    background: var(--surface-soft); color: var(--mute); cursor: not-allowed;
+  }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .btn--primary:hover { background: #111; }
+</style>
+
 <form method="post" class="form-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
   <div class="form-card__bar">
-    <a class="btn" href="{{ url_for('product.list_view') }}">Back</a>
+    <a class="btn" href="{{ route_for('product.list_view') }}">Back</a>
     {% if not product or access_can('product', 'edit') %}
       <button class="btn btn--primary" type="submit">Save</button>
     {% endif %}

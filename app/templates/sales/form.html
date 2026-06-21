@@ -4,12 +4,92 @@
 {% block content %}
 {% set deliverable = order and order.status in ['confirmed','partially_delivered'] %}
 
+<style>
+  /* sales/form — internal CSS for the order form (new + existing modes).
+     Covers: form-card chrome, action bar with nested inline forms, header field grid,
+     read-only text rows, product lines table, status badges, ref badge, primary button. */
+
+  .form-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xl); margin-bottom: var(--lg);
+  }
+  .form-card__bar {
+    display: flex; align-items: center; gap: var(--sm); flex-wrap: wrap;
+    padding-bottom: var(--md); margin-bottom: var(--md);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .form-card__bar > form { margin: 0; }     /* inline action forms align with siblings */
+  .form-card h3 { font-size: 16px; margin: var(--lg) 0 var(--xs); color: var(--ink); }
+
+  .form-grid {
+    display: grid; grid-template-columns: 160px 1fr;
+    column-gap: var(--md); row-gap: 6px;
+    align-items: center; margin-bottom: var(--md);
+  }
+  .form-grid label { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+  .readonly-text { color: var(--charcoal); padding: 4px 0; }
+
+  .ref-badge {
+    border: 1px dashed var(--ink); border-radius: var(--r-xs);
+    padding: 4px 12px; font-weight: 700; font-size: 13px; color: var(--ink);
+    letter-spacing: .04em;
+  }
+  .status-inline {
+    margin-left: auto; color: var(--mute); font-size: 14px; font-weight: 600;
+  }
+
+  /* ---- inputs / selects ---- */
+  .input {
+    display: block; width: 100%; height: 40px;
+    padding: 8px 12px; border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 15px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+
+  /* ---- buttons ---- */
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary {
+    background: var(--ink); color: var(--on-dark); border-color: var(--ink);
+  }
+  .btn--primary:hover { background: #111; }
+
+  /* ---- products table (different from list-view table; tighter, with foot total) ---- */
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px; margin-bottom: var(--md);
+  }
+  .list-table th {
+    text-align: left; color: var(--charcoal); font-weight: 700;
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline-strong);
+  }
+  .list-table td { padding: 8px 12px; border-bottom: 1px solid var(--hairline); }
+  .list-table .num { text-align: right; }
+  .list-table tfoot td { border-top: 1px solid var(--hairline-strong); border-bottom: none; }
+  .list-table .input { height: 32px; padding: 4px 8px; font-size: 14px; }
+  .muted { color: var(--mute); }
+
+  /* ---- status badges (lifecycle colors) ---- */
+  .status {
+    display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .status--done      { background: var(--success);color: var(--ink); }
+  .status--cancelled { background: var(--mute);   color: var(--on-dark); }
+</style>
+
 {# ---------- NEW ORDER (draft creation) ---------- #}
 {% if not order %}
-<form method="post" action="{{ url_for('sales.create') }}" class="form-card">
+<form method="post" action="{{ route_for('sales.create') }}" class="form-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-card__bar">
-    <a class="btn" href="{{ url_for('sales.list_view') }}">Back</a>
+    <a class="btn" href="{{ route_for('sales.list_view') }}">Back</a>
     <button class="btn btn--primary" type="submit">Create</button>
   </div>
   <div class="form-grid">
@@ -41,17 +121,17 @@
 {% else %}
 <div class="form-card">
   <div class="form-card__bar">
-    <a class="btn" href="{{ url_for('sales.list_view') }}">Back</a>
+    <a class="btn" href="{{ route_for('sales.list_view') }}">Back</a>
 
     {% if order.status == 'draft' and access_can('sales','approve') %}
-      <form method="post" action="{{ url_for('sales.confirm', order_id=order.id) }}" style="display:inline">
+      <form method="post" action="{{ route_for('sales.confirm', order_id=order.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="btn btn--primary">Confirm</button>
       </form>
     {% endif %}
 
     {% if order.status in ['draft','confirmed'] and access_can('sales','edit') %}
-      <form method="post" action="{{ url_for('sales.cancel', order_id=order.id) }}" style="display:inline">
+      <form method="post" action="{{ route_for('sales.cancel', order_id=order.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="btn">Cancel</button>
       </form>
@@ -68,7 +148,7 @@
     <label>Sales Person</label><div class="readonly-text">{{ order.salesperson.name if order.salesperson else '—' }}</div>
   </div>
 
-  <form method="post" action="{{ url_for('sales.deliver', order_id=order.id) }}">
+  <form method="post" action="{{ route_for('sales.deliver', order_id=order.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h3>Products</h3>
     <table class="list-table">
@@ -83,6 +163,7 @@
         {% for line in order.lines %}
         <tr>
           <td>{{ line.product.name }}</td>
+          {# Note: `line.availability` is TRUE when there's a shortage (ordered > free-to-use). #}
           <td>{% if line.availability %}<span class="status status--cancelled">Shortage</span>
               {% else %}<span class="status status--done">Available</span>{% endif %}</td>
           <td class="num">{{ '%.2f'|format(line.ordered_qty) }}</td>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Mini ERP — the digital backbone of a growing furniture business. Sales, Purchase, Manufacturing and Inventory in one connected system.">
+  <title>Mini ERP — Shiv Furniture Works</title>
+
+  <style>
+    :root {
+      --primary: #ffed00; --primary-deep: #e6d200; --on-primary: #000;
+      --ink: #000; --body: #222; --mute: #666;
+      --canvas: #fff; --surface-dark: #000; --surface-deep: #111;
+      --on-dark: #fff;
+      --xs: 8px; --sm: 12px; --md: 16px; --lg: 20px;
+      --xl: 24px; --xxl: 32px; --xxxl: 40px; --section: 80px;
+      --r-md: 4px; --r-pill: 46px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color: var(--body); background: var(--canvas);
+      line-height: 1.5;
+    }
+
+    /* ---- top strip ---- */
+    .lp-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--md) var(--xl);
+      border-bottom: 1px solid #eee;
+    }
+    .lp-nav__brand { font-weight: 800; color: var(--ink); text-decoration: none; font-size: 18px; }
+    .lp-nav__brand b { background: var(--primary); padding: 2px 6px; }
+    .lp-nav__actions { display: flex; gap: var(--sm); }
+    .lp-nav__link {
+      padding: 8px 16px; border-radius: var(--r-md); text-decoration: none;
+      font-size: 14px; font-weight: 700;
+    }
+    .lp-nav__link--ghost  { color: var(--ink); }
+    .lp-nav__link--ghost:hover { background: #f6f6f6; }
+    .lp-nav__link--solid  { background: var(--ink); color: var(--on-dark); }
+    .lp-nav__link--solid:hover { background: var(--surface-deep); }
+
+    /* ---- hero ---- */
+    .hero {
+      position: relative; overflow: hidden;
+      background: var(--surface-dark); color: var(--on-dark);
+      padding: var(--section) var(--xl);
+    }
+    .hero::before {
+      /* big yellow accent shape */
+      content: ""; position: absolute; right: -160px; top: -160px;
+      width: 520px; height: 520px;
+      background: var(--primary); border-radius: 50%;
+      opacity: .92;
+    }
+    .hero__inner {
+      position: relative; z-index: 1;
+      max-width: 980px; margin: 0 auto;
+    }
+    .hero__eyebrow {
+      display: inline-block; padding: 4px 12px; margin-bottom: var(--lg);
+      background: var(--primary); color: var(--on-primary);
+      font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      border-radius: var(--r-md);
+    }
+    .hero__title {
+      font-size: clamp(36px, 6vw, 64px); line-height: 1.05; font-weight: 800; margin: 0 0 var(--lg);
+      max-width: 18ch;
+    }
+    .hero__title span { color: var(--primary); }
+    .hero__lede {
+      font-size: clamp(16px, 2vw, 20px); color: rgba(255,255,255,.85);
+      max-width: 56ch; margin: 0 0 var(--xxl);
+    }
+    .hero__ctas { display: flex; gap: var(--md); flex-wrap: wrap; }
+    .cta {
+      display: inline-block; padding: 14px 28px;
+      font-weight: 800; letter-spacing: .02em; text-decoration: none;
+      border-radius: var(--r-md); font-size: 16px;
+    }
+    .cta--primary { background: var(--primary); color: var(--on-primary); }
+    .cta--primary:hover { background: var(--primary-deep); }
+    .cta--ghost {
+      background: transparent; color: var(--on-dark);
+      border: 1px solid rgba(255,255,255,.4);
+    }
+    .cta--ghost:hover { background: rgba(255,255,255,.08); }
+
+    /* ---- value props ---- */
+    .props {
+      max-width: 980px; margin: 0 auto; padding: var(--section) var(--xl);
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--xl);
+    }
+    .prop__num {
+      display: inline-block; font-weight: 800; font-size: 14px;
+      padding: 2px 10px; background: var(--primary); color: var(--on-primary);
+      border-radius: var(--r-pill);
+    }
+    .prop__title { font-size: 20px; font-weight: 800; margin: var(--sm) 0 4px; color: var(--ink); }
+    .prop__body { color: var(--mute); font-size: 15px; }
+
+    /* ---- modules strip ---- */
+    .modules {
+      background: #f7f7f7;
+      padding: var(--section) var(--xl);
+    }
+    .modules__inner { max-width: 980px; margin: 0 auto; }
+    .modules__title { font-size: 28px; font-weight: 800; margin: 0 0 var(--xl); color: var(--ink); }
+    .modules__grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--md);
+    }
+    .module-chip {
+      background: var(--canvas); border: 1px solid #eaeaea;
+      padding: var(--lg); border-radius: var(--r-md);
+    }
+    .module-chip__h { font-weight: 800; color: var(--ink); margin: 0 0 4px; }
+    .module-chip__p { color: var(--mute); font-size: 14px; margin: 0; }
+
+    /* ---- closing CTA strip ---- */
+    .closer {
+      padding: var(--section) var(--xl);
+      text-align: center;
+      background: var(--primary); color: var(--on-primary);
+    }
+    .closer__title { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin: 0 0 var(--md); }
+    .closer__cta {
+      display: inline-block; padding: 14px 32px;
+      background: var(--ink); color: var(--on-dark); text-decoration: none;
+      font-weight: 800; border-radius: var(--r-md);
+    }
+    .closer__cta:hover { background: var(--surface-deep); }
+
+    .lp-foot {
+      padding: var(--xl); text-align: center;
+      background: var(--surface-dark); color: rgba(255,255,255,.7);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="lp-nav">
+  <a class="lp-nav__brand" href="/">Shiv <b>Furniture</b> Works</a>
+  <nav class="lp-nav__actions">
+    <a class="lp-nav__link lp-nav__link--ghost" href="{{ url_for('auth.login') }}">Log in</a>
+    <a class="lp-nav__link lp-nav__link--solid" href="{{ url_for('auth.signup') }}">Sign up</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero__inner">
+    <span class="hero__eyebrow">Mini ERP · from demand to delivery</span>
+    <h1 class="hero__title">
+      Run your furniture business <span>as one connected system.</span>
+    </h1>
+    <p class="hero__lede">
+      One place for sales, purchase, manufacturing, BoM and stock — with automated procurement
+      (MTS &amp; MTO), real-time inventory, and audit-log traceability across every order.
+    </p>
+    <div class="hero__ctas">
+      <a class="cta cta--primary" href="{{ url_for('auth.signup') }}">Get started — Sign up</a>
+      <a class="cta cta--ghost"   href="{{ url_for('auth.login') }}">I already have an account</a>
+    </div>
+  </div>
+</section>
+
+<section class="props">
+  <div>
+    <span class="prop__num">01</span>
+    <h3 class="prop__title">Stock that tells the truth</h3>
+    <p class="prop__body">
+      Free To Use = On Hand − Reserved. Every sale, purchase and production updates inventory in
+      real time, with a stock ledger you can audit line by line.
+    </p>
+  </div>
+  <div>
+    <span class="prop__num">02</span>
+    <h3 class="prop__title">Procurement that fires itself</h3>
+    <p class="prop__body">
+      Configure each product MTS or MTO. When a sales order can't be filled from stock, the system
+      auto-creates the right purchase or manufacturing order for the shortfall.
+    </p>
+  </div>
+  <div>
+    <span class="prop__num">03</span>
+    <h3 class="prop__title">Roles that fit your team</h3>
+    <p class="prop__body">
+      Sales, Purchase, Manufacturing, Inventory, Owner — each role sees what it needs and nothing
+      more. Admins approve new joiners and fine-tune per-field permissions.
+    </p>
+  </div>
+</section>
+
+<section class="modules">
+  <div class="modules__inner">
+    <h2 class="modules__title">Everything you need, in one app.</h2>
+    <div class="modules__grid">
+      <div class="module-chip"><p class="module-chip__h">Sales Orders</p><p class="module-chip__p">Confirm, deliver, cancel — stock moves per event.</p></div>
+      <div class="module-chip"><p class="module-chip__h">Purchase Orders</p><p class="module-chip__p">Receive into stock with a full ledger trail.</p></div>
+      <div class="module-chip"><p class="module-chip__h">Manufacturing</p><p class="module-chip__p">Consume components, produce finished goods.</p></div>
+      <div class="module-chip"><p class="module-chip__h">Bills of Materials</p><p class="module-chip__p">Reusable templates flowing into MOs.</p></div>
+      <div class="module-chip"><p class="module-chip__h">Products &amp; Inventory</p><p class="module-chip__p">On hand, reserved, free-to-use — always live.</p></div>
+      <div class="module-chip"><p class="module-chip__h">Audit Logs</p><p class="module-chip__p">Who changed what, when, with old → new values.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="closer">
+  <h2 class="closer__title">Ready to digitize your workshop?</h2>
+  <a class="closer__cta" href="{{ url_for('auth.signup') }}">Create an account →</a>
+</section>
+
+<footer class="lp-foot">
+  Mini ERP — Shiv Furniture Works · Odoo × KAHE Coimbatore hackathon
+</footer>
+
+</body>
+</html>

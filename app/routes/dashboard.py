@@ -8,7 +8,7 @@ from flask_login import current_user, login_required
 from app.services import access
 from app.services import dashboard as dash_svc
 
-bp = Blueprint("dashboard", __name__)
+bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
 
 @bp.route("/")

@@ -1,17 +1,54 @@
-{# Reusable audit-log panel. Expects `logs` in context (already module-filtered). #}
+{# Reusable per-record audit-log panel. Expects `logs` in context (already module-filtered).
+   Owns its own internal CSS so it ports cleanly into any form page that includes it. #}
+
+<style>
+  .logs-panel { margin-top: var(--lg); }
+  .logs-panel__title { font-size: 18px; font-weight: 700; margin: 0 0 var(--sm); color: var(--ink); }
+
+  /* tight table tuned for log rows — old/new can be long, let them wrap */
+  .logs-panel__table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card);
+    border: 1px solid var(--hairline-strong);
+    font-size: 13px;
+  }
+  .logs-panel__table th,
+  .logs-panel__table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--hairline);
+    text-align: left;
+    vertical-align: top;
+    word-break: break-word;
+  }
+  .logs-panel__table th { color: var(--charcoal); font-weight: 700; }
+  .logs-panel__table td.when { white-space: nowrap; color: var(--mute); }
+  .logs-panel__action {
+    display: inline-block; padding: 1px 8px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    background: var(--stone); color: var(--ink);
+  }
+  .logs-panel__action--create { background: var(--success); }
+  .logs-panel__action--write  { background: var(--info); color: var(--on-dark); }
+  .logs-panel__action--delete { background: var(--error); color: var(--on-dark); }
+  .logs-panel__empty { color: var(--mute); }
+</style>
+
+{% set action_label = {'create':'Created','write':'Updated','status_change':'Status',
+  'delete':'Deleted','deliver':'Delivered','receive':'Received','produce':'Produced'} %}
+
 <section class="logs-panel">
   <h2 class="logs-panel__title">Logs</h2>
   {% if logs %}
-    <table class="list-table">
+    <table class="logs-panel__table">
       <thead>
         <tr><th>When</th><th>User</th><th>Action</th><th>Field</th><th>Old</th><th>New</th></tr>
       </thead>
       <tbody>
         {% for e in logs %}
           <tr>
-            <td>{{ e.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="when">{{ e.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
             <td>{{ e.user.name if e.user else '—' }}</td>
-            <td>{{ e.action }}</td>
+            <td><span class="logs-panel__action logs-panel__action--{{ e.action }}">{{ action_label.get(e.action, e.action) }}</span></td>
             <td>{{ e.field or '—' }}</td>
             <td>{{ e.old_value or '—' }}</td>
             <td>{{ e.new_value or '—' }}</td>
@@ -20,6 +57,6 @@
       </tbody>
     </table>
   {% else %}
-    <p class="muted">No log entries yet.</p>
+    <p class="logs-panel__empty">No log entries yet.</p>
   {% endif %}
 </section>

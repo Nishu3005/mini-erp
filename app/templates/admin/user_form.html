@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name or user.login_id }}{% endblock %}
+
+{% set module_labels = {'sales':'Sales','purchase':'Purchase','manufacturing':'Manufacturing','product':'Product'} %}
+
+{# render one Create/View/Edit/Delete cell per the field config #}
+{% macro cell(module, action, spec, right) %}
+  {% if spec == 'grid' %}
+    <td class="grid-cell">
+      <input type="checkbox" name="right-{{ module }}-{{ action }}"
+             {{ 'checked' if right and right['can_' ~ action] }}>
+    </td>
+  {% elif spec is true %}
+    <td class="grid-cell"><span class="tick">✓</span></td>
+  {% elif spec is false %}
+    <td class="grid-cell"><span class="cross">✗</span></td>
+  {% elif spec and spec.startswith('note:') %}
+    <td class="grid-cell"><span class="grid-note">{{ spec[5:] }}</span></td>
+  {% else %}
+    <td class="grid-cell">—</td>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+<style>
+  /* admin/user_form — the densest page in the app:
+       (1) waiting-list approval card (conditional)
+       (2) profile header + Position/Role editor
+       (3) avatar block beside the fields
+       (4) tab bar (Sales / Purchase / Manufacturing / Product)
+       (5) 5-column permission grid per tab (Field + Create/View/Edit/Delete) */
+
+  /* ---- shared chrome ---- */
+  .form-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xl); margin-bottom: var(--lg);
+    position: relative;          /* so the approval-card accent strip can absolute-position */
+  }
+  .form-card__bar {
+    display: flex; align-items: center; gap: var(--sm); flex-wrap: wrap;
+    padding-bottom: var(--md); margin-bottom: var(--md);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .form-card__bar > form { margin: 0; }
+  .form-card .list-toolbar__title { font-weight: 700; color: var(--ink); }
+  .muted { color: var(--mute); }
+
+  .input {
+    display: block; width: 100%; height: 40px;
+    padding: 8px 12px; border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 15px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .btn--primary:hover { background: #111; }
+
+  /* status pills used in the approval card */
+  .status {
+    display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .status--draft     { background: var(--stone); color: var(--ink); }
+  .status--partial   { background: var(--warning); color: var(--ink); }   /* pending */
+  .status--cancelled { background: var(--mute); color: var(--on-dark); }  /* rejected */
+
+  /* ---- (1) approval card — accent left edge so it screams "action needed" ---- */
+  .approval-card { border-left: 6px solid var(--warning); }
+  .approval-card.is-rejected { border-left-color: var(--error); }
+  .approval-actions {
+    display: flex; gap: var(--md); align-items: flex-end; flex-wrap: wrap;
+  }
+  .approval-form {
+    display: flex; gap: var(--xs); align-items: flex-end;
+  }
+  .approval-form span { display: flex; flex-direction: column; gap: 4px; }
+  .approval-form label {
+    font-size: 12px; font-weight: 600; color: var(--charcoal);
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+
+  /* ---- (2)/(3) profile header + avatar ---- */
+  .profile {
+    display: flex; gap: var(--xl); flex-wrap: wrap; align-items: flex-start;
+  }
+  .profile__fields {
+    flex: 1 1 360px;
+    display: grid; grid-template-columns: 160px 1fr;
+    column-gap: var(--md); row-gap: 6px;
+    align-items: center;
+  }
+  .profile__fields label {
+    font-size: 13px; font-weight: 600; color: var(--charcoal);
+  }
+  .readonly-text { color: var(--charcoal); padding: 4px 0; }
+
+  .profile__photo {
+    display: flex; flex-direction: column; align-items: center; gap: var(--sm);
+    flex: 0 0 200px;
+  }
+  .profile__avatar {
+    width: 160px; height: 160px; object-fit: cover;
+    border: 1px solid var(--hairline-strong); border-radius: var(--r-md);
+  }
+  .profile__avatar--empty {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ash); background: var(--surface-soft);
+    font-size: 13px;
+  }
+
+  /* ---- (4) tab bar ---- */
+  .tabs {
+    display: flex; gap: 2px;
+    margin: var(--lg) 0 0;
+    border-bottom: 1px solid var(--hairline-strong);
+  }
+  .tab {
+    background: var(--canvas); color: var(--ink);
+    border: 1px solid var(--stone); border-bottom: none;
+    border-radius: var(--r-xs) var(--r-xs) 0 0;
+    padding: 8px 18px; cursor: pointer;
+    font-weight: 600; font-size: 14px;
+    position: relative; top: 1px;     /* sit on the bottom border */
+  }
+  .tab:hover { background: var(--surface-soft); }
+  .tab--active {
+    background: var(--info); color: var(--on-dark); border-color: var(--info);
+    box-shadow: inset 0 -3px 0 var(--ink);   /* dark underline for extra emphasis */
+  }
+  .tab-panel { margin-top: var(--md); }
+
+  /* ---- (5) permission grid table ---- */
+  .grid-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px;
+  }
+  .grid-table th, .grid-table td {
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline);
+  }
+  .grid-table th {
+    color: var(--charcoal); font-weight: 700; text-align: center;
+    border-bottom-color: var(--hairline-strong);
+  }
+  .grid-table th:first-child, .grid-table td:first-child { text-align: left; }
+
+  .grid-cell { text-align: center; }
+  .grid-cell input[type="checkbox"] {
+    width: 18px; height: 18px; cursor: pointer; vertical-align: middle;
+    accent-color: var(--ink);     /* the checked color picks up the brand */
+  }
+  .grid-cell .tick  { color: var(--success); font-weight: 700; font-size: 16px; }
+  .grid-cell .cross { color: var(--error);   font-weight: 700; font-size: 16px; }
+
+  /* fixed cells (note:Auto Compute / Recomputed / System Computed / Not possible)
+     get a subtle pill so they read as a system rule, not free text */
+  .grid-note {
+    display: inline-block;
+    padding: 2px 8px; border-radius: var(--r-pill);
+    font-size: 11px; font-style: italic;
+    background: var(--surface-soft); color: var(--mute);
+    border: 1px dashed var(--stone);
+  }
+</style>
+
+{# ---- waiting-list approval (standalone forms, above the rights editor) ---- #}
+{% if user.status != 'active' %}
+<div class="form-card approval-card {{ 'is-rejected' if user.status == 'rejected' }}">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ route_for('admin.dashboard') }}">Back</a>
+    <span class="list-toolbar__title">{{ 'Waiting-list request' if user.status == 'pending' else 'Rejected request' }}</span>
+  </div>
+  <p>
+    <b>{{ user.name or user.login_id }}</b> ·
+    Status: <span class="status status--{{ {'pending':'partial','rejected':'cancelled'}.get(user.status,'draft') }}">{{ user.status|title }}</span>
+    · Requested role: <b>{{ user.requested_role|title if user.requested_role else '—' }}</b>
+  </p>
+  {% if user.status == 'pending' %}
+  <div class="approval-actions">
+    <form method="post" action="{{ route_for('admin.approve', user_id=user.id) }}" class="approval-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <span><label>Approve as</label>
+        <select class="input" name="role">
+          {% for key, lbl in requestable_roles %}
+            <option value="{{ key }}" {{ 'selected' if user.requested_role == key }}>{{ lbl }}</option>
+          {% endfor %}
+        </select></span>
+      <button class="btn btn--primary" type="submit">Approve</button>
+    </form>
+    <form method="post" action="{{ route_for('admin.reject', user_id=user.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn" type="submit">Reject</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ---- profile header + Position + rights grid (single form) ---- #}
+<form method="post" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-card__bar">
+    <a class="btn" href="{{ route_for('admin.dashboard') }}">Back</a>
+    <span class="list-toolbar__title">User Management</span>
+    <button class="btn btn--primary" type="submit">Save</button>
+  </div>
+
+  <div class="profile">
+    <div class="profile__fields">
+      <label>Name</label><div class="readonly-text">{{ user.name or '—' }}</div>
+      <label>Address</label><div class="readonly-text">{{ user.address or '—' }}</div>
+      <label>Mobile Number</label><div class="readonly-text">{{ user.mobile or '—' }}</div>
+      <label>Email ID</label><div class="readonly-text">{{ user.email }}</div>
+      <label>Position</label>
+      <input class="input" name="position" value="{{ user.position or '' }}"
+             placeholder="e.g. Sales Manager">
+      {% if user.status == 'active' %}
+      <label>Role</label>
+      <select class="input" name="role">
+        {% for key, lbl in requestable_roles %}
+          <option value="{{ key }}" {{ 'selected' if user.role == key }}>{{ lbl }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </div>
+    <div class="profile__photo">
+      {% if user.photo_path %}
+        <img class="profile__avatar" src="{{ route_for('static', filename=user.photo_path) }}" alt="">
+      {% else %}<div class="profile__avatar profile__avatar--empty">No photo</div>{% endif %}
+    </div>
+  </div>
+  <p class="muted" style="font-size:13px">
+    Profile fields are read-only — <b>only Position</b> is admin-editable.
+    {% if user.role %}Current role: <b>{{ user.role_label }}</b>.{% endif %}
+  </p>
+
+  {# ---- 4 permission tabs ---- #}
+  <div class="tabs">
+    {% for m in ['sales','purchase','manufacturing','product'] %}
+      <button type="button" class="tab {{ 'tab--active' if m == active_tab }}"
+              onclick="showTab('{{ m }}', this)">{{ module_labels[m] }}</button>
+    {% endfor %}
+  </div>
+
+  {% for m in ['sales','purchase','manufacturing','product'] %}
+    <div class="tab-panel" id="panel-{{ m }}" style="display:{{ 'block' if m == active_tab else 'none' }}">
+      <table class="grid-table">
+        <thead><tr><th>Field</th><th>Create</th><th>View</th><th>Edit</th><th>Delete</th></tr></thead>
+        <tbody>
+          {% for label, cells in tabs[m] %}
+            <tr>
+              <td>{{ label }}</td>
+              {{ cell(m, 'create', cells.create, rights[m]) }}
+              {{ cell(m, 'view',   cells.view,   rights[m]) }}
+              {{ cell(m, 'edit',   cells.edit,   rights[m]) }}
+              {{ cell(m, 'delete', cells.delete, rights[m]) }}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
+</form>
+
+<script>
+function showTab(m, btn){
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display='none');
+  document.getElementById('panel-'+m).style.display='block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab--active'));
+  btn.classList.add('tab--active');
+}
+</script>
+{% endblock %}

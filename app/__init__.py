@@ -31,30 +31,41 @@ def create_app(config_name: str = "dev") -> Flask:
     def load_user(user_id):
         return db.session.get(models.User, int(user_id))
 
+    from app.routes.admin import bp as admin_bp
     from app.routes.audit import bp as audit_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.bom import bp as bom_bp
     from app.routes.dashboard import bp as dashboard_bp
+    from app.routes.landing import bp as landing_bp
     from app.routes.manufacturing import bp as manufacturing_bp
     from app.routes.product import bp as product_bp
     from app.routes.profile import bp as profile_bp
     from app.routes.purchase import bp as purchase_bp
     from app.routes.sales import bp as sales_bp
+    from app.services.urlscheme import bp as scoped_bp
 
+    app.register_blueprint(admin_bp)
     app.register_blueprint(audit_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(bom_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(landing_bp)
     app.register_blueprint(manufacturing_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(purchase_bp)
     app.register_blueprint(sales_bp)
+    app.register_blueprint(scoped_bp)            # /<role>/<username>/<rest> dispatcher
 
     @app.context_processor
     def inject_helpers():
         from app.services.access import can_current
-        return {"access_can": can_current}
+        from app.services.urlscheme import route_for
+        return {"access_can": can_current, "route_for": route_for}
+
+    # also expose route_for as a Jinja global so macros (no context) can use it
+    from app.services.urlscheme import route_for as _route_for
+    app.jinja_env.globals["route_for"] = _route_for
 
     @app.errorhandler(403)
     def forbidden(_e):

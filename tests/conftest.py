@@ -50,10 +50,12 @@ def seeded(db):
     for m in ("sales", "purchase", "manufacturing", "product"):
         db.session.add(_grant_all(u, m))
 
+    from app.services import sequences
     cust = Customer(name="Acme", address="A St")
     vend = Vendor(name="VendCo", address="V St")
-    prod = Product(reference="PRD-000001", name="Chair", sales_price=Decimal("100"),
-                   cost_price=Decimal("60"), on_hand_qty=Decimal("20"))
+    prod = Product(reference=sequences.next_reference("PRD"), name="Chair",
+                   sales_price=Decimal("100"), cost_price=Decimal("60"),
+                   on_hand_qty=Decimal("20"))
     db.session.add_all([cust, vend, prod])
     db.session.commit()
     return {"user": u, "customer": cust, "vendor": vend, "product": prod}

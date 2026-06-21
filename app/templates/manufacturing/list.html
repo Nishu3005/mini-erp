@@ -8,8 +8,70 @@
 {% macro status_badge(s) %}<span class="status status--{{ badge.get(s,'draft') }}">{{ s.replace('_',' ')|title }}</span>{% endmacro %}
 
 {% block content %}
+{{ ov.styles() }}
+<style>
+  /* manufacturing/list — own CSS for the data table + filter chips + status pills.
+     Toolbar + kanban styles come from ov.styles() injected above. */
+
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px;
+  }
+  .list-table th {
+    text-align: left; color: var(--charcoal); font-weight: 700;
+    padding: 12px 16px; border-bottom: 1px solid var(--hairline-strong);
+  }
+  .list-table td { padding: 12px 16px; border-bottom: 1px solid var(--hairline); }
+  .list-table .num { text-align: right; }
+  .list-table tbody tr.row-link { cursor: pointer; }
+  .list-table tbody tr.row-link:hover { background: var(--surface-soft); }
+  .list-table tbody tr.row-link:focus { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .muted { color: var(--mute); }
+
+  .filter-bar { display: flex; flex-wrap: wrap; gap: var(--xs); margin-bottom: var(--md); }
+  .filter-chip {
+    padding: 6px 14px; border: 1px solid var(--stone); border-radius: var(--r-pill);
+    font-size: 13px; color: var(--ink); text-decoration: none; background: var(--canvas);
+  }
+  .filter-chip:hover { background: var(--surface-soft); }
+  .filter-chip--active {
+    background: var(--primary); color: var(--on-primary);
+    border-color: var(--primary-deep); font-weight: 700;
+  }
+
+  /* shared status badge — lifecycle colors */
+  .status {
+    display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .status--draft     { background: var(--stone);  color: var(--ink); }
+  .status--confirmed { background: var(--info);   color: var(--on-dark); }
+  .status--partial   { background: var(--warning);color: var(--ink); }
+  .status--done      { background: var(--success);color: var(--ink); }
+  .status--cancelled { background: var(--mute);   color: var(--on-dark); }
+
+  /* component status (Available / Not Available) — derived per-line, mirror the badge language */
+  .comp-status {
+    display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .comp-status--available { background: var(--success); color: var(--ink); }
+  .comp-status--short     { background: var(--error);   color: var(--on-dark); }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .btn--primary:hover { background: #111; }
+</style>
+
 {{ ov.toolbar('Manufacturing Orders', 'manufacturing.list_view', view, search,
-              url_for('manufacturing.create'), access_can('manufacturing','create'), mine=mine) }}
+              route_for('manufacturing.create'), access_can('manufacturing','create'), mine=mine) }}
 
 <div class="filter-bar">
   {% set chips = [('', 'All'), ('draft','Draft'), ('confirmed','Confirmed'),
@@ -17,13 +79,18 @@
   {% for value, lbl in chips %}
     {% set is_active = (not value and not status) or (status == value) %}
     <a class="filter-chip {{ 'filter-chip--active' if is_active }}"
-       href="{{ url_for('manufacturing.list_view', status=value or none, mine=mine, view=view) }}">{{ lbl }}</a>
+       href="{{ route_for('manufacturing.list_view', status=value or none, mine=mine, view=view) }}">{{ lbl }}</a>
   {% endfor %}
 </div>
 
+{% macro comp_pill(s) %}
+  {% if s == 'Available' %}<span class="comp-status comp-status--available">Available</span>
+  {% else %}<span class="comp-status comp-status--short">Not Available</span>{% endif %}
+{% endmacro %}
+
 {% if view == 'kanban' %}
   {% call(o) ov.kanban_board(orders, statuses) %}
-    <a class="kanban__card" href="{{ url_for('manufacturing.form', order_id=o.id) }}">
+    <a class="kanban__card" href="{{ route_for('manufacturing.form', order_id=o.id) }}">
       <div class="kanban__card-top"><b>{{ o.reference }}</b>{{ status_badge(o.status) }}</div>
       <div>{{ o.finished_product.name }}</div>
       <div class="muted">Qty {{ '%.2f'|format(o.quantity) }} · {{ o.component_status }}</div>
@@ -31,16 +98,16 @@
   {% endcall %}
 {% else %}
   <table class="list-table">
-    <thead><tr><th>Reference</th><th>Date</th><th>Finished Product</th><th>Component Status</th><th class="num">Quantity</th><th>Status</th></tr></thead>
+    <thead><tr><th>Reference</th><th>Date</th><th>Finished Product</th><th>Components</th><th class="num">Quantity</th><th>Status</th></tr></thead>
     <tbody>
       {% for o in orders %}
-        <tr class="row-link" tabindex="0" data-href="{{ url_for('manufacturing.form', order_id=o.id) }}"
+        <tr class="row-link" tabindex="0" data-href="{{ route_for('manufacturing.form', order_id=o.id) }}"
             onclick="window.location=this.dataset.href"
             onkeydown="if(event.key==='Enter')window.location=this.dataset.href">
           <td>{{ o.reference }}</td>
           <td>{{ o.creation_date.strftime('%Y-%m-%d') if o.creation_date else '—' }}</td>
           <td>{{ o.finished_product.name }}</td>
-          <td>{{ o.component_status }}</td>
+          <td>{{ comp_pill(o.component_status) }}</td>
           <td class="num">{{ '%.2f'|format(o.quantity) }}</td>
           <td>{{ status_badge(o.status) }}</td>
         </tr>
@@ -50,4 +117,5 @@
     </tbody>
   </table>
 {% endif %}
+{% include "partials/pager.html" %}
 {% endblock %}

@@ -33,9 +33,11 @@ def list_view():
         q = q.filter_by(status="in_progress")
     if search:
         q = q.filter(ManufacturingOrder.reference.ilike(f"%{search}%"))
-    orders = q.order_by(ManufacturingOrder.creation_date.desc()).all()
+    from app.services.pagination import paginate
+    page = request.args.get("page", type=int, default=1)
+    orders, page_meta = paginate(q.order_by(ManufacturingOrder.creation_date.desc()), page=page)
     return render_template("manufacturing/list.html", orders=orders, status=status,
-                           mine=mine, view=view, search=search)
+                           mine=mine, view=view, search=search, page_meta=page_meta)
 
 
 @bp.route("/new", methods=["GET", "POST"])

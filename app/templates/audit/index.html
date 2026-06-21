@@ -5,6 +5,104 @@
   'delete':'Deleted','deliver':'Delivered','receive':'Received','produce':'Produced'} %}
 
 {% block content %}
+<style>
+  /* audit/index — the densest data page in the app:
+       4 stat cards (colored), filter bar, paginated 9-column table.
+     All visual rules live here (page-internal). */
+
+  .page-title { font-size: 24px; font-weight: 700; color: var(--ink); margin: 0 0 var(--lg); }
+  .muted { color: var(--mute); }
+
+  /* ---- 4 stat cards (colored at-a-glance metrics) ---- */
+  .stat-cards {
+    display: grid; gap: var(--md); margin-bottom: var(--lg);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .stat-card {
+    padding: var(--md) var(--lg); border-radius: var(--r-md);
+    display: flex; flex-direction: column;
+    font-weight: 700; color: var(--on-dark);
+  }
+  .stat-card small { font-weight: 400; opacity: .9; font-size: 12px; }
+  .stat-card__n { font-size: 32px; line-height: 1.1; }
+  .stat-card--total  { background: var(--info); }
+  .stat-card--create { background: var(--success); color: var(--ink); }
+  .stat-card--create small { color: var(--charcoal); }
+  .stat-card--update { background: #a9772a; }      /* warm amber for "updated" */
+  .stat-card--delete { background: var(--error); }
+
+  /* ---- filter bar ---- */
+  .audit-filters {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--md);
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--md); margin-bottom: var(--md);
+  }
+  .audit-filters__field { display: flex; flex-direction: column; gap: 4px; }
+  .audit-filters__field label {
+    font-size: 12px; font-weight: 600; color: var(--charcoal);
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  .audit-filters__range { display: flex; gap: var(--xs); }
+  .audit-filters__actions { display: flex; gap: var(--xs); margin-left: auto; }
+
+  .input {
+    display: block; width: 100%; height: 40px;
+    padding: 8px 12px; border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 14px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .btn--primary:hover { background: #111; }
+
+  /* ---- 9-column table ---- */
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 13px;
+    table-layout: fixed;     /* fix col widths so long old/new values wrap, not blow up */
+  }
+  .list-table th, .list-table td {
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline);
+    text-align: left; vertical-align: top;
+    word-break: break-word;
+  }
+  .list-table th {
+    color: var(--charcoal); font-weight: 700;
+    border-bottom-color: var(--hairline-strong);
+  }
+
+  /* action badge (mirrors the per-record logs panel vocabulary) */
+  .status {
+    display: inline-block; padding: 2px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    background: var(--stone); color: var(--ink);
+  }
+  .status--done      { background: var(--success); color: var(--ink); }     /* Created */
+  .status--confirmed { background: var(--info);    color: var(--on-dark); } /* Updated */
+  .status--cancelled { background: var(--error);   color: var(--on-dark); } /* Deleted */
+  .status--draft     { background: var(--stone);   color: var(--ink); }     /* Everything else */
+
+  /* ---- pagination ---- */
+  .pagination { display: flex; gap: 4px; margin-top: var(--md); flex-wrap: wrap; }
+  .pagination__page {
+    padding: 6px 12px; border: 1px solid var(--stone); border-radius: var(--r-xs);
+    text-decoration: none; color: var(--ink); font-size: 13px; min-width: 32px; text-align: center;
+  }
+  .pagination__page:hover { background: var(--surface-soft); }
+  .pagination__page--active {
+    background: var(--primary); border-color: var(--primary-deep);
+    font-weight: 700; color: var(--on-primary);
+  }
+</style>
+
 <h1 class="page-title">Audit Logs</h1>
 
 {# --- 4 stat cards --- #}
@@ -53,7 +151,7 @@
   </div>
   <div class="audit-filters__actions">
     <button class="btn btn--primary" type="submit">Filter</button>
-    <a class="btn" href="{{ url_for('audit.index') }}">Reset</a>
+    <a class="btn" href="{{ route_for('audit.index') }}">Reset</a>
   </div>
 </form>
 
@@ -92,7 +190,7 @@
   {% for p in range(1, result.pages + 1) %}
     {% set _ = base.update({'page': p}) %}
     <a class="pagination__page {{ 'pagination__page--active' if p==result.page }}"
-       href="{{ url_for('audit.index', **base) }}">{{ p }}</a>
+       href="{{ route_for('audit.index', **base) }}">{{ p }}</a>
   {% endfor %}
 </div>
 {% endif %}

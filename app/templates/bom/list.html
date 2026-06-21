@@ -3,14 +3,45 @@
 {% block title %}Bills of Materials{% endblock %}
 
 {% block content %}
+{{ ov.styles() }}
+<style>
+  /* bom/list — simple table; no status filter, no kanban (toolbar passes kanban=False). */
+
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px;
+  }
+  .list-table th {
+    text-align: left; color: var(--charcoal); font-weight: 700;
+    padding: 12px 16px; border-bottom: 1px solid var(--hairline-strong);
+  }
+  .list-table td { padding: 12px 16px; border-bottom: 1px solid var(--hairline); }
+  .list-table .num { text-align: right; }
+  .list-table tbody tr.row-link { cursor: pointer; }
+  .list-table tbody tr.row-link:hover { background: var(--surface-soft); }
+  .list-table tbody tr.row-link:focus { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .muted { color: var(--mute); }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .btn--primary:hover { background: #111; }
+</style>
+
 {{ ov.toolbar('Bills of Materials', 'bom.list_view', 'list', search,
-              url_for('bom.create'), access_can('manufacturing','edit_bom'), kanban=False) }}
+              route_for('bom.create'), access_can('manufacturing','edit_bom'), kanban=False) }}
 
 <table class="list-table">
   <thead><tr><th>Reference</th><th>Finished Product</th><th class="num">Quantity</th><th>Label</th></tr></thead>
   <tbody>
     {% for b in boms %}
-      <tr class="row-link" tabindex="0" data-href="{{ url_for('bom.form', bom_id=b.id) }}"
+      <tr class="row-link" tabindex="0" data-href="{{ route_for('bom.form', bom_id=b.id) }}"
           onclick="window.location=this.dataset.href"
           onkeydown="if(event.key==='Enter')window.location=this.dataset.href">
         <td>{{ b.reference }}</td>

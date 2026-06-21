@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}System Administrator{% endblock %}
+
+{% block content %}
+<style>
+  /* admin/dashboard — Users list. Has filter chips with pending-count badge, dual view
+     (list + cards), search. The toolbar / view-toggle styles are inlined here (this page does
+     not import ov.styles() — it's not an "order" module). */
+
+  .page-title { font-size: 24px; font-weight: 700; color: var(--ink); margin: 0 0 var(--lg); }
+  .muted { color: var(--mute); }
+
+  /* status filter chips with optional pending-count badge */
+  .filter-bar { display: flex; flex-wrap: wrap; gap: var(--xs); margin-bottom: var(--md); }
+  .filter-chip {
+    padding: 6px 14px; border: 1px solid var(--stone); border-radius: var(--r-pill);
+    font-size: 13px; color: var(--ink); text-decoration: none; background: var(--canvas);
+  }
+  .filter-chip:hover { background: var(--surface-soft); }
+  .filter-chip--active {
+    background: var(--primary); color: var(--on-primary);
+    border-color: var(--primary-deep); font-weight: 700;
+  }
+  .filter-chip b { color: var(--error); margin-left: 4px; }   /* pending-count badge */
+
+  /* bulk-import panel — collapsible <details> so it doesn't clutter the page */
+  .bulk-import {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    margin-bottom: var(--md);
+  }
+  .bulk-import > summary {
+    list-style: none; cursor: pointer; padding: var(--sm) var(--md);
+    font-weight: 700; color: var(--ink); user-select: none;
+    display: flex; align-items: center; gap: var(--xs);
+  }
+  .bulk-import > summary::-webkit-details-marker { display: none; }
+  .bulk-import > summary::before { content: "▸"; color: var(--mute); font-size: 12px; }
+  .bulk-import[open] > summary::before { content: "▾"; }
+  .bulk-import__body {
+    padding: var(--md); border-top: 1px solid var(--hairline);
+    display: flex; align-items: flex-end; gap: var(--md); flex-wrap: wrap;
+  }
+  .bulk-import__hint { color: var(--mute); font-size: 12px; margin: var(--xs) 0 0; flex-basis: 100%; }
+  .bulk-import code {
+    background: var(--surface-soft); padding: 1px 6px; border-radius: var(--r-xs);
+    font-size: 12px;
+  }
+
+  /* toolbar */
+  .list-toolbar {
+    display: flex; align-items: center; gap: var(--md);
+    background: var(--canvas); border: 1px solid var(--hairline-strong);
+    padding: var(--sm) var(--md); margin-bottom: var(--md);
+  }
+  .list-toolbar__title { font-weight: 700; color: var(--ink); }
+  .list-search { display: flex; gap: var(--xs); margin-left: auto; }
+  .list-search__input { height: 40px; min-width: 220px; }
+
+  .view-toggle { display: flex; gap: 2px; }
+  .view-toggle__btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--stone); border-radius: var(--r-xs);
+    text-decoration: none; color: var(--ink); font-size: 18px;
+  }
+  .view-toggle__btn:hover { background: var(--surface-soft); }
+  .view-toggle__btn--active { background: var(--primary); border-color: var(--primary-deep); }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .input {
+    display: block; height: 40px; padding: 8px 12px;
+    border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 14px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+
+  /* user cards (the "card view" alternative) */
+  .user-cards {
+    display: grid; gap: var(--md);
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  .user-card {
+    display: flex; gap: var(--md); align-items: center;
+    text-decoration: none; color: var(--ink);
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md); padding: var(--md);
+  }
+  .user-card:hover { border-color: var(--primary-deep); }
+  .user-card__avatar {
+    width: 48px; height: 48px; border-radius: var(--r-full);
+    background: var(--surface-soft); flex: 0 0 48px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; overflow: hidden;
+  }
+  .user-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* list-view table + per-row status badge */
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px;
+  }
+  .list-table th {
+    text-align: left; color: var(--charcoal); font-weight: 700;
+    padding: 12px 16px; border-bottom: 1px solid var(--hairline-strong);
+  }
+  .list-table td { padding: 12px 16px; border-bottom: 1px solid var(--hairline); }
+  .list-table tbody tr.row-link { cursor: pointer; }
+  .list-table tbody tr.row-link:hover { background: var(--surface-soft); }
+  .list-table tbody tr.row-link:focus { outline: 2px solid var(--primary); outline-offset: -2px; }
+
+  .status {
+    display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .status--draft     { background: var(--stone);  color: var(--ink); }
+  .status--partial   { background: var(--warning);color: var(--ink); }   /* pending */
+  .status--done      { background: var(--success);color: var(--ink); }   /* active */
+  .status--cancelled { background: var(--mute);   color: var(--on-dark); } /* rejected */
+</style>
+
+<h1 class="page-title">System Administrator Dashboard</h1>
+
+{# bulk-import: upload a JSON array of records. Idempotent (skips duplicates by name). #}
+<details class="bulk-import">
+  <summary>Bulk Import Data</summary>
+  <form class="bulk-import__body" method="post"
+        action="{{ route_for('admin.bulk_import') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <span style="display:flex; flex-direction:column; gap:4px">
+      <label style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--charcoal)">Dataset</label>
+      <select class="input" name="dataset" required>
+        <option value="customers">Customers</option>
+        <option value="vendors">Vendors</option>
+        <option value="products">Products</option>
+      </select>
+    </span>
+    <span style="display:flex; flex-direction:column; gap:4px">
+      <label style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--charcoal)">JSON file</label>
+      <input class="input" type="file" name="file" accept="application/json,.json" required>
+    </span>
+    <button class="btn btn--primary" type="submit">Import</button>
+    <p class="bulk-import__hint">
+      Upload a JSON array. For partners: <code>[{"name":"…","address":"…"}]</code>.
+      For products add <code>sales_price</code>, <code>cost_price</code>, <code>on_hand_qty</code>.
+      Duplicates (by name) are skipped — safe to re-run.
+    </p>
+  </form>
+</details>
+
+<div class="filter-bar">
+  {% set chips = [('', 'All'), ('pending', 'Pending'), ('active', 'Active'), ('rejected', 'Rejected')] %}
+  {% for value, lbl in chips %}
+    <a class="filter-chip {{ 'filter-chip--active' if (status or '') == value }}"
+       href="{{ route_for('admin.dashboard', status=value or none, view=view) }}">{{ lbl }}{% if value == 'pending' and pending_count %} <b>({{ pending_count }})</b>{% endif %}</a>
+  {% endfor %}
+</div>
+
+<div class="list-toolbar">
+  <span class="list-toolbar__title">Users</span>
+  <form class="list-search" method="get" action="{{ route_for('admin.dashboard') }}">
+    <input type="hidden" name="view" value="{{ view }}">
+    <input class="input list-search__input" type="search" name="q" value="{{ search or '' }}"
+           placeholder="Search name / login / email…">
+    <button class="btn" type="submit">Search</button>
+  </form>
+  <span class="view-toggle">
+    <a class="view-toggle__btn {{ 'view-toggle__btn--active' if view=='list' }}"
+       href="{{ route_for('admin.dashboard', view='list', q=search) }}" title="List view">&#9776;</a>
+    <a class="view-toggle__btn {{ 'view-toggle__btn--active' if view=='kanban' }}"
+       href="{{ route_for('admin.dashboard', view='kanban', q=search) }}" title="Card view">&#9783;</a>
+  </span>
+</div>
+
+{% if view == 'kanban' %}
+  <div class="user-cards">
+    {% for u in users %}
+      <a class="user-card" href="{{ route_for('admin.user_form', user_id=u.id) }}">
+        <div class="user-card__avatar">
+          {% if u.photo_path %}<img src="{{ route_for('static', filename=u.photo_path) }}" alt="">
+          {% else %}{{ (u.name or u.login_id)[0]|upper }}{% endif %}
+        </div>
+        <div>
+          <div><b>{{ u.name or u.login_id }}</b></div>
+          <div class="muted">{{ u.position or '—' }}</div>
+        </div>
+      </a>
+    {% else %}
+      <p class="muted">No users{% if search %} match{% endif %}.</p>
+    {% endfor %}
+  </div>
+{% else %}
+  {% set status_badge = {'pending':'partial','active':'done','rejected':'cancelled'} %}
+  <table class="list-table">
+    <thead><tr><th>Users</th><th>Role</th><th>Status</th><th>Login Id</th><th>Email</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+        <tr class="row-link" tabindex="0" data-href="{{ route_for('admin.user_form', user_id=u.id) }}"
+            onclick="window.location=this.dataset.href"
+            onkeydown="if(event.key==='Enter')window.location=this.dataset.href">
+          <td>{{ u.name or u.login_id }}</td>
+          <td>{{ u.role_label if u.role else (u.requested_role|title + ' (requested)' if u.requested_role else '—') }}</td>
+          <td><span class="status status--{{ status_badge.get(u.status,'draft') }}">{{ u.status|title }}</span></td>
+          <td>{{ u.login_id }}</td>
+          <td>{{ u.email }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="muted">No users{% if search or status %} match{% endif %}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}

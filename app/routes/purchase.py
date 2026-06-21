@@ -39,10 +39,12 @@ def list_view():
         like = f"%{search}%"
         q = q.join(Vendor).filter(
             or_(PurchaseOrder.reference.ilike(like), Vendor.name.ilike(like)))
-    orders = q.order_by(PurchaseOrder.creation_date.desc()).all()
+    from app.services.pagination import paginate
+    page = request.args.get("page", type=int, default=1)
+    orders, page_meta = paginate(q.order_by(PurchaseOrder.creation_date.desc()), page=page)
     return render_template("purchase/list.html", orders=orders,
                            status=(request.args.get("filter") or status),
-                           mine=mine, view=view, search=search)
+                           mine=mine, view=view, search=search, page_meta=page_meta)
 
 
 @bp.route("/new", methods=["GET", "POST"])

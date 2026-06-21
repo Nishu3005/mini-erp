@@ -7,7 +7,9 @@
     "address": "Head Office, Ahmedabad, 380001",
     "mobile": "+919800000000",
     "position": "Administrator",
-    "is_admin": true
+    "is_admin": true,
+    "role": "admin",
+    "status": "active"
   },
   {
     "login_id": "owner.shiv",
@@ -17,7 +19,9 @@
     "address": "Bodakdev, Ahmedabad, 380054",
     "mobile": "+919811111111",
     "position": "Business Owner",
-    "rights": "owner"
+    "rights": "owner",
+    "role": "owner",
+    "status": "active"
   },
   {
     "login_id": "mgr.mehul",
@@ -27,7 +31,9 @@
     "address": "Satellite, Ahmedabad, 380015",
     "mobile": "+919822222222",
     "position": "Operations Manager",
-    "rights": "manager"
+    "rights": "manager",
+    "role": "inventory",
+    "status": "active"
   },
   {
     "login_id": "sales.ravi",
@@ -37,7 +43,9 @@
     "address": "Maninagar, Ahmedabad, 380008",
     "mobile": "+919833333333",
     "position": "Sales Executive",
-    "rights": "sales"
+    "rights": "sales",
+    "role": "sales",
+    "status": "active"
   },
   {
     "login_id": "sales.salman",
@@ -47,7 +55,9 @@
     "address": "Vastrapur, Ahmedabad, 380015",
     "mobile": "+919844444444",
     "position": "Sales Executive",
-    "rights": "sales"
+    "rights": "sales",
+    "role": "sales",
+    "status": "active"
   },
   {
     "login_id": "sales.priya",
@@ -57,7 +67,9 @@
     "address": "Navrangpura, Ahmedabad, 380009",
     "mobile": "+919855555555",
     "position": "Sales Executive",
-    "rights": "sales"
+    "rights": "sales",
+    "role": "sales",
+    "status": "active"
   },
   {
     "login_id": "purchase.vijay",
@@ -67,7 +79,9 @@
     "address": "Naroda, Ahmedabad, 382330",
     "mobile": "+919866666666",
     "position": "Purchase Officer",
-    "rights": "purchase"
+    "rights": "purchase",
+    "role": "purchase",
+    "status": "active"
   },
   {
     "login_id": "mfg.dinesh",
@@ -77,6 +91,8 @@
     "address": "Vatva GIDC, Ahmedabad, 382445",
     "mobile": "+919877777777",
     "position": "Production Supervisor",
-    "rights": "manufacturing"
+    "rights": "manufacturing",
+    "role": "manufacturing",
+    "status": "active"
   }
 ]

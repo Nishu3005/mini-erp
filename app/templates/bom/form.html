@@ -3,11 +3,77 @@
 
 {% block content %}
 {% set can_edit = access_can('manufacturing','edit_bom') %}
+
+<style>
+  /* bom/form — template editor. Inputs gate by can_edit via disabled/readonly attrs;
+     internal CSS gives those states a clear visual treatment. */
+
+  .form-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xl); margin-bottom: var(--lg);
+  }
+  .form-card__bar {
+    display: flex; align-items: center; gap: var(--sm); flex-wrap: wrap;
+    padding-bottom: var(--md); margin-bottom: var(--md);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .form-card h3 { font-size: 16px; margin: var(--lg) 0 var(--xs); color: var(--ink); }
+
+  .form-grid {
+    display: grid; grid-template-columns: 180px 1fr;
+    column-gap: var(--md); row-gap: 6px;
+    align-items: center; margin-bottom: var(--md);
+  }
+  .form-grid label { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+
+  .ref-badge {
+    border: 1px dashed var(--ink); border-radius: var(--r-xs);
+    padding: 4px 12px; font-weight: 700; font-size: 13px; color: var(--ink);
+    letter-spacing: .04em;
+  }
+
+  .input {
+    display: block; width: 100%; height: 40px;
+    padding: 8px 12px; border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 15px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+  /* permission-gated state: disabled selects + readonly inputs both look "locked" */
+  .input[disabled], .input[readonly] {
+    background: var(--surface-soft); color: var(--mute); cursor: not-allowed;
+  }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .btn--primary:hover { background: #111; }
+
+  /* component/operation lines */
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px; margin-bottom: var(--md);
+  }
+  .list-table th {
+    text-align: left; color: var(--charcoal); font-weight: 700;
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline-strong);
+  }
+  .list-table td { padding: 8px 12px; border-bottom: 1px solid var(--hairline); }
+  .list-table .num { text-align: right; }
+  .list-table .input { height: 32px; padding: 4px 8px; font-size: 14px; }
+  .muted { color: var(--mute); }
+</style>
+
 <form method="post" class="form-card"
-      action="{{ url_for('bom.form', bom_id=bom.id) if bom else url_for('bom.create') }}">
+      action="{{ route_for('bom.form', bom_id=bom.id) if bom else route_for('bom.create') }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-card__bar">
-    <a class="btn" href="{{ url_for('bom.list_view') }}">Back</a>
+    <a class="btn" href="{{ route_for('bom.list_view') }}">Back</a>
     {% if can_edit %}<button class="btn btn--primary" type="submit">Save</button>{% endif %}
     {% if bom %}<span class="ref-badge">{{ bom.reference }}</span>{% endif %}
   </div>

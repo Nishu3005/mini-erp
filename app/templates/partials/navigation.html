@@ -1,25 +1,104 @@
 {# Top bar per the breakdown wireframe:
    - Hamburger (left)  -> Master Menu panel slides in from the RIGHT.
    - App Logo + Name   -> centered.
-   - User Avatar (right)-> Profile/login panel slides in from the LEFT ("login and profile setup").
-#}
+   - User Avatar (right)-> Profile/login panel slides in from the LEFT.
+   This partial owns its own internal CSS (page-scoped style block). #}
+
+<style>
+  /* topbar */
+  .topbar {
+    display: flex; align-items: center; gap: var(--md);
+    height: 60px; padding: 0 var(--xl);
+    background: var(--canvas);
+    border-bottom: 1px solid var(--hairline-strong);
+  }
+  .topbar__icon {
+    background: var(--canvas); color: var(--ink);
+    border: 1px solid var(--stone); border-radius: var(--r-xs);
+    width: 40px; height: 40px; font-size: 18px; cursor: pointer;
+  }
+  .topbar__icon:hover { background: var(--surface-soft); }
+  .topbar__brand {
+    flex: 1; text-align: center;
+    font-weight: 700; color: var(--ink); text-decoration: none;
+  }
+  .topbar__avatar-btn {
+    width: 40px; height: 40px; padding: 0;
+    background: var(--canvas); color: var(--ink);
+    border: 1px solid var(--stone); border-radius: var(--r-full);
+    font-size: 24px; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar__avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* shared slide-panel pattern (left = profile, right = master menu) */
+  .side-panel {
+    position: fixed; top: 0; height: 100%; width: 280px; z-index: 30;
+    background: var(--surface-card);
+    transition: transform .2s ease;
+    display: flex; flex-direction: column;
+  }
+  .side-panel--right { right: 0; border-left: 1px solid var(--hairline-strong); transform: translateX(100%); }
+  .side-panel--left  { left: 0;  border-right: 1px solid var(--hairline-strong); transform: translateX(-100%); }
+  .side-panel.open { transform: translateX(0); }
+
+  .side-panel__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--md) var(--lg);
+    border-bottom: 1px solid var(--hairline-strong);
+    font-weight: 700;
+  }
+  .side-panel__close {
+    background: none; border: none; font-size: 22px; cursor: pointer; color: var(--ink);
+  }
+  .side-panel__body { padding: var(--md) 0; }
+  .side-panel__user {
+    padding: 0 var(--lg) var(--md);
+    display: flex; flex-direction: column;
+  }
+  .side-panel__user .muted { color: var(--mute); }
+
+  .side-panel__nav { display: flex; flex-direction: column; }
+  .side-panel__nav a,
+  .side-panel__soon {
+    padding: var(--md) var(--lg);
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink); text-decoration: none;
+  }
+  .side-panel__nav a:hover { background: var(--surface-soft); }
+  .side-panel__soon { color: var(--ash); }   /* not-yet-built menu items */
+
+  /* dimmer behind any open panel */
+  .side-panel__scrim {
+    display: none; position: fixed; inset: 0; z-index: 20;
+    background: rgba(0, 0, 0, .32);
+  }
+  /* show the scrim whenever any side-panel is open (uses :has support — modern browsers) */
+  body:has(.side-panel.open) .side-panel__scrim { display: block; }
+</style>
+
 <header class="topbar">
   <button class="topbar__icon" onclick="document.getElementById('master-menu').classList.add('open')"
           aria-label="Open menu" type="button">&#9776;</button>
-  <a class="topbar__brand" href="{{ url_for('dashboard.index') }}">Shiv Furniture Works</a>
+  <a class="topbar__brand"
+     href="{{ route_for('admin.dashboard') if current_user.is_admin else route_for('dashboard.index') }}">
+    Shiv Furniture Works
+  </a>
   <button class="topbar__avatar-btn" onclick="document.getElementById('profile-panel').classList.add('open')"
-          aria-label="Profile" type="button">
+          aria-label="Profile and account" type="button">
     {% if current_user.photo_path %}
-      <img class="topbar__avatar-img" src="{{ url_for('static', filename=current_user.photo_path) }}" alt="me">
+      <img class="topbar__avatar-img" src="{{ url_for('static', filename=current_user.photo_path) }}"
+           alt="{{ current_user.name or current_user.login_id }}">
     {% else %}&#9787;{% endif %}
   </button>
 </header>
 
 {# Profile / login panel — slides from the LEFT #}
-<aside id="profile-panel" class="side-panel side-panel--left">
+<aside id="profile-panel" class="side-panel side-panel--left" aria-label="Profile">
   <div class="side-panel__head">
     <span>Profile</span>
-    <button class="side-panel__close" onclick="document.getElementById('profile-panel').classList.remove('open')"
+    <button class="side-panel__close"
+            onclick="document.getElementById('profile-panel').classList.remove('open')"
             aria-label="Close" type="button">&times;</button>
   </div>
   <div class="side-panel__body">
@@ -28,26 +107,28 @@
       <span class="muted">{{ current_user.position or '—' }}</span>
     </div>
     <nav class="side-panel__nav">
-      <a href="{{ url_for('profile.index') }}">User Login Detail Management</a>
+      <a href="{{ route_for('profile.index') }}">User Login Detail Management</a>
       <a href="{{ url_for('auth.logout') }}">Logout</a>
     </nav>
   </div>
 </aside>
 
 {# Master Menu — slides from the RIGHT #}
-<aside id="master-menu" class="side-panel side-panel--right">
+<aside id="master-menu" class="side-panel side-panel--right" aria-label="Master menu">
   <div class="side-panel__head">
     <span>Master Menu</span>
-    <button class="side-panel__close" onclick="document.getElementById('master-menu').classList.remove('open')"
+    <button class="side-panel__close"
+            onclick="document.getElementById('master-menu').classList.remove('open')"
             aria-label="Close" type="button">&times;</button>
   </div>
   <nav class="side-panel__nav">
-    {% if access_can('sales','view') %}<a href="{{ url_for('sales.list_view') }}">Sale Orders</a>{% endif %}
-    {% if access_can('purchase','view') %}<a href="{{ url_for('purchase.list_view') }}">Purchase Orders</a>{% endif %}
-    {% if access_can('manufacturing','view') %}<a href="{{ url_for('manufacturing.list_view') }}">Manufacturing Orders</a>{% endif %}
-    {% if access_can('manufacturing','view') %}<a href="{{ url_for('bom.list_view') }}">Bills of Materials</a>{% endif %}
-    {% if access_can('product','view') %}<a href="{{ url_for('product.list_view') }}">Products</a>{% endif %}
-    {% if current_user.is_admin %}<a href="{{ url_for('audit.index') }}">Audit Logs</a>
+    {% if current_user.is_admin %}<a href="{{ route_for('admin.dashboard') }}">Users</a>{% endif %}
+    {% if access_can('sales','view') %}<a href="{{ route_for('sales.list_view') }}">Sale Orders</a>{% endif %}
+    {% if access_can('purchase','view') %}<a href="{{ route_for('purchase.list_view') }}">Purchase Orders</a>{% endif %}
+    {% if access_can('manufacturing','view') %}<a href="{{ route_for('manufacturing.list_view') }}">Manufacturing Orders</a>{% endif %}
+    {% if access_can('manufacturing','view') %}<a href="{{ route_for('bom.list_view') }}">Bills of Materials</a>{% endif %}
+    {% if access_can('product','view') %}<a href="{{ route_for('product.list_view') }}">Products</a>{% endif %}
+    {% if current_user.is_admin %}<a href="{{ route_for('audit.index') }}">Audit Logs</a>
     {% else %}<span class="side-panel__soon">Audit Logs</span>{% endif %}
   </nav>
 </aside>

@@ -190,6 +190,34 @@ label { font-size: 14px; font-weight: 600; color: var(--charcoal); }
   text-decoration: none; color: var(--ink); font-size: 18px; }
 .view-toggle__btn--active { background: var(--primary); border-color: var(--primary-deep); }
 
+/* ---- tabs (admin user-management) ---- */
+.tabs { display: flex; gap: 2px; margin: var(--lg) 0 0; border-bottom: 1px solid var(--hairline-strong); }
+.tab { background: var(--canvas); color: var(--ink); border: 1px solid var(--stone);
+  border-bottom: none; border-radius: var(--r-xs) var(--r-xs) 0 0; padding: 8px 18px;
+  cursor: pointer; font-weight: 600; }
+.tab--active { background: var(--info); color: var(--on-dark); border-color: var(--info); }
+.tab-panel { margin-top: var(--md); }
+
+/* permission grid */
+.grid-table th { text-align: center; }
+.grid-table th:first-child, .grid-table td:first-child { text-align: left; }
+.grid-cell { text-align: center; }
+.grid-cell .tick { color: var(--success); font-weight: 700; }
+.grid-cell .cross { color: var(--error); font-weight: 700; }
+.grid-note { color: var(--ash); font-size: 12px; font-style: italic; }
+
+/* ---- admin user cards ---- */
+.user-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--md); }
+.user-card { display: flex; gap: var(--md); align-items: center; text-decoration: none;
+  color: var(--ink); background: var(--surface-card); border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-md); padding: var(--md); }
+.user-card:hover { border-color: var(--primary-deep); }
+.user-card__avatar { width: 48px; height: 48px; border-radius: var(--r-full);
+  background: var(--surface-soft); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; overflow: hidden; flex: 0 0 48px; }
+.user-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
 /* ---- kanban board ---- */
 .kanban { display: flex; gap: var(--md); overflow-x: auto; padding-bottom: var(--md); }
 .kanban__col { flex: 0 0 240px; background: var(--surface-soft); border-radius: var(--r-md);

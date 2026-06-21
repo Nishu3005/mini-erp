@@ -2,7 +2,7 @@
 import re
 
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, SubmitField
+from wtforms import PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import (DataRequired, Email, EqualTo, Length,
                                 ValidationError)
 
@@ -42,4 +42,15 @@ class SignupForm(FlaskForm):
         "Re-Enter Password",
         validators=[DataRequired(), EqualTo("password", message="Passwords must match.")],
     )
+    requested_role = SelectField(
+        "Requested Role",
+        validators=[DataRequired(message="Choose the role you're applying for.")],
+    )
     submit = SubmitField("Sign Up")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from app.services.roles import REQUESTABLE_ROLES, ROLE_LABELS
+        self.requested_role.choices = [("", "— Select a role —")] + [
+            (r, ROLE_LABELS[r]) for r in REQUESTABLE_ROLES
+        ]

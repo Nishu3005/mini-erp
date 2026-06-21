@@ -6,17 +6,70 @@
     {% set args = {'status': status} if status not in ['late','to_close'] else {'filter': status} %}
     {% if scope == 'my' %}{% set _ = args.update({'mine': 1}) %}{% endif %}
     <a class="dash-pill {{ 'dash-pill--late' if status=='late' }}"
-       href="{{ url_for(card.endpoint, **args) }}"><b>{{ n }}</b>{{ label }}</a>
+       href="{{ route_for(card.endpoint, **args) }}"><b>{{ n }}</b>{{ label }}</a>
   {% else %}
     <span class="dash-pill {{ 'dash-pill--late' if status=='late' }}"><b>{{ n }}</b>{{ label }}</span>
   {% endif %}
 {% endmacro %}
 
 {% block content %}
+<style>
+  /* dashboard page: stacked module cards, each with an All row and a My row of clickable pills */
+  .page-title { font-size: 24px; font-weight: 700; color: var(--ink); margin: 0 0 4px; }
+  .page-subtitle { color: var(--mute); margin: 0 0 var(--lg); font-size: 14px; }
+
+  .dash-empty {
+    background: var(--surface-card); border: 1px dashed var(--stone);
+    padding: var(--xl); border-radius: var(--r-md); text-align: center;
+    color: var(--mute);
+  }
+  .dash-empty b { color: var(--ink); }
+
+  .dash-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--lg); margin-bottom: var(--lg);
+  }
+  .dash-card__title {
+    font-size: 18px; font-weight: 700; margin: 0 0 var(--md);
+    text-align: center; color: var(--ink);
+    padding-bottom: var(--xs); border-bottom: 1px solid var(--hairline);
+  }
+  .dash-row {
+    display: flex; align-items: center; gap: var(--sm);
+    flex-wrap: wrap; margin-bottom: var(--xs);
+  }
+  .dash-row:last-child { margin-bottom: 0; }
+  .dash-row__scope {
+    width: 40px; font-weight: 800; color: var(--mute);
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+  }
+
+  /* clickable count pill — used by both <a> and <span> variants */
+  .dash-pill {
+    display: inline-flex; flex-direction: column; align-items: center;
+    min-width: 92px; padding: var(--xs) var(--md);
+    border: 1px solid var(--stone); border-radius: var(--r-pill);
+    font-size: 11px; color: var(--charcoal); background: var(--canvas);
+    text-decoration: none;
+    transition: border-color .12s ease, background .12s ease;
+  }
+  .dash-pill b { font-size: 18px; color: var(--ink); margin-bottom: 2px; }
+  a.dash-pill:hover { border-color: var(--primary-deep); background: var(--surface-soft); }
+  /* Late pill — red accent (derived state needs to stand out) */
+  .dash-pill--late { border-color: var(--error); }
+  .dash-pill--late b { color: var(--error); }
+</style>
+
 <h1 class="page-title">Dashboard</h1>
+{% if current_user.name %}
+<p class="page-subtitle">Hi {{ current_user.name }} — here's where things stand right now.</p>
+{% endif %}
 
 {% if not cards %}
-  <p class="muted">You don't have access to any modules yet. Ask an administrator to grant rights.</p>
+  <div class="dash-empty">
+    <p><b>No modules available yet.</b><br>
+    Ask a System Administrator to approve your role and grant module access.</p>
+  </div>
 {% endif %}
 
 {% for card in cards %}

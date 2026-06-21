@@ -3,9 +3,10 @@
 
 {% macro post_btn(action, label, cls='', form_id=none) %}
   {% if form_id %}
+    {# Submit button bound to a sibling form (used by Produce -> the Components form) #}
     <button class="btn {{ cls }}" type="submit" form="{{ form_id }}">{{ label }}</button>
   {% else %}
-    <form method="post" action="{{ action }}" style="display:inline">
+    <form method="post" action="{{ action }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button class="btn {{ cls }}">{{ label }}</button>
     </form>
@@ -13,11 +14,86 @@
 {% endmacro %}
 
 {% block content %}
+<style>
+  /* manufacturing/form — internal CSS for the MO state-machine form.
+     Covers: form-card chrome, header field grid, status badges, two child tables
+     (Components is interactive; Work Orders is static), state-driven button row. */
+
+  .form-card {
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    padding: var(--xl); margin-bottom: var(--lg);
+  }
+  .form-card__bar {
+    display: flex; align-items: center; gap: var(--sm); flex-wrap: wrap;
+    padding-bottom: var(--md); margin-bottom: var(--md);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .form-card__bar > form { margin: 0; }     /* inline action forms align with siblings */
+  .form-card h3 { font-size: 16px; margin: var(--lg) 0 var(--xs); color: var(--ink); }
+
+  .form-grid {
+    display: grid; grid-template-columns: 180px 1fr;
+    column-gap: var(--md); row-gap: 6px;
+    align-items: center; margin-bottom: var(--md);
+  }
+  .form-grid label { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+  .readonly-text { color: var(--charcoal); padding: 4px 0; }
+
+  .ref-badge {
+    border: 1px dashed var(--ink); border-radius: var(--r-xs);
+    padding: 4px 12px; font-weight: 700; font-size: 13px; color: var(--ink);
+    letter-spacing: .04em;
+  }
+  .status-inline { margin-left: auto; color: var(--mute); font-size: 14px; font-weight: 600; }
+  .muted { color: var(--mute); }
+
+  .input {
+    display: block; width: 100%; height: 40px;
+    padding: 8px 12px; border: 1px solid var(--stone); background: var(--canvas);
+    font-size: 15px; color: var(--ink); border-radius: 0;
+  }
+  .input:focus { outline: 2px solid var(--primary); border-color: var(--primary-deep); }
+
+  .btn {
+    display: inline-block; cursor: pointer;
+    padding: 8px 16px; height: 40px; line-height: 22px;
+    border: 1px solid var(--stone); background: var(--canvas); color: var(--ink);
+    text-decoration: none; font-size: 14px; font-weight: 700; border-radius: var(--r-xs);
+  }
+  .btn:hover { background: var(--surface-soft); }
+  .btn--primary {
+    background: var(--ink); color: var(--on-dark); border-color: var(--ink);
+  }
+  .btn--primary:hover { background: #111; }
+
+  /* both child tables (Components + Work Orders) use the same chrome */
+  .list-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface-card); border: 1px solid var(--hairline-strong);
+    font-size: 14px; margin-bottom: var(--md);
+  }
+  .list-table th {
+    text-align: left; color: var(--charcoal); font-weight: 700;
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline-strong);
+  }
+  .list-table td { padding: 8px 12px; border-bottom: 1px solid var(--hairline); }
+  .list-table .num { text-align: right; }
+  .list-table .input { height: 32px; padding: 4px 8px; font-size: 14px; }
+
+  /* status badges — same lifecycle vocabulary as the rest of the app */
+  .status {
+    display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .status--done      { background: var(--success);color: var(--ink); }
+  .status--cancelled { background: var(--mute);   color: var(--on-dark); }
+</style>
+
 {% if not order %}
-<form method="post" action="{{ url_for('manufacturing.create') }}" class="form-card">
+<form method="post" action="{{ route_for('manufacturing.create') }}" class="form-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-card__bar">
-    <a class="btn" href="{{ url_for('manufacturing.list_view') }}">Back</a>
+    <a class="btn" href="{{ route_for('manufacturing.list_view') }}">Back</a>
     <button class="btn btn--primary" type="submit">Create</button>
   </div>
   <div class="form-grid">
@@ -40,19 +116,19 @@
 {% set producible = order.status in ['confirmed','in_progress'] %}
 <div class="form-card">
   <div class="form-card__bar">
-    <a class="btn" href="{{ url_for('manufacturing.list_view') }}">Back</a>
+    <a class="btn" href="{{ route_for('manufacturing.list_view') }}">Back</a>
     {% if access_can('manufacturing','production_entry') %}
       {% if order.status == 'draft' %}
-        {{ post_btn(url_for('manufacturing.confirm', order_id=order.id), 'Confirm', 'btn--primary') }}
+        {{ post_btn(route_for('manufacturing.confirm', order_id=order.id), 'Confirm', 'btn--primary') }}
       {% endif %}
       {% if order.status == 'confirmed' %}
-        {{ post_btn(url_for('manufacturing.start', order_id=order.id), 'Start', 'btn--primary') }}
+        {{ post_btn(route_for('manufacturing.start', order_id=order.id), 'Start', 'btn--primary') }}
       {% endif %}
       {% if producible %}
-        {{ post_btn(url_for('manufacturing.produce', order_id=order.id), 'Produce', 'btn--primary', form_id='produce-form') }}
+        {{ post_btn(route_for('manufacturing.produce', order_id=order.id), 'Produce', 'btn--primary', form_id='produce-form') }}
       {% endif %}
       {% if order.status in ['draft','confirmed','in_progress'] %}
-        {{ post_btn(url_for('manufacturing.cancel', order_id=order.id), 'Cancel', '') }}
+        {{ post_btn(route_for('manufacturing.cancel', order_id=order.id), 'Cancel', '') }}
       {% endif %}
     {% endif %}
     <span class="ref-badge">{{ order.reference }}</span>
@@ -67,8 +143,8 @@
     <label>Schedule Date</label><div class="readonly-text">{{ order.schedule_date.strftime('%Y-%m-%d') if order.schedule_date else '—' }}</div>
   </div>
 
-  {# Components — consume inputs live in the produce form #}
-  <form id="produce-form" method="post" action="{{ url_for('manufacturing.produce', order_id=order.id) }}">
+  {# Components — consume inputs live in the produce form (Produce button submits THIS form) #}
+  <form id="produce-form" method="post" action="{{ route_for('manufacturing.produce', order_id=order.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h3>Components</h3>
     <table class="list-table">

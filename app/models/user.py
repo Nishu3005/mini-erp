@@ -26,7 +26,23 @@ class User(UserMixin, db.Model):
     position = db.Column(db.String(80))           # admin-only editable
     photo_path = db.Column(db.String(255))
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+
+    # --- RBAC (spec/rbac-redesign.md) ---
+    role = db.Column(db.String(20))               # admin/sales/inventory/manufacturing/purchase/owner
+    status = db.Column(db.String(12), default="active", nullable=False)  # pending/active/rejected
+    requested_role = db.Column(db.String(20))     # role chosen at signup (admin confirms/changes)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def is_active_member(self) -> bool:
+        """Approved (or admin). Pending/rejected users get no module access."""
+        return self.is_admin or self.status == "active"
+
+    @property
+    def role_label(self) -> str:
+        from app.services.roles import ROLE_LABELS
+        return ROLE_LABELS.get(self.role, "—")
 
     access_rights = db.relationship(
         "AccessRight", backref="user", cascade="all, delete-orphan", lazy="selectin"
