@@ -1,0 +1,43 @@
+{# Shared "Add another line" button for repeating-row tables.
+   Usage:  drop right AFTER the </table> of a repeating-row block:
+       {% with target = 'salesLines' %}{% include "partials/add_line_button.html" %}{% endwith %}
+   The target id must be the <tbody> id. The button clones the LAST <tr> inside it, clears
+   the cloned inputs/selects, and appends. Server-side already drops empty rows, so the
+   clone-and-clear pattern is safe — no extra POST handling needed. #}
+<div class="add-line-wrap" style="margin-top:-6px;margin-bottom:var(--md)">
+  <button type="button" class="btn add-line-btn" data-target="{{ target }}"
+          aria-label="Add another line">+ Add line</button>
+</div>
+<style>
+  .add-line-btn {
+    padding: 6px 14px; height: 34px; font-size: 13px; font-weight: 700;
+    border: 1px dashed var(--ink); background: var(--canvas); color: var(--ink);
+    border-radius: var(--r-xs); cursor: pointer;
+  }
+  .add-line-btn:hover { background: var(--primary); border-style: solid; }
+</style>
+<script>
+  // Idempotent: only bind once even if the partial is included multiple times per page.
+  (function () {
+    if (window.__addLineBound) return;
+    window.__addLineBound = true;
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.add-line-btn');
+      if (!btn) return;
+      var body = document.getElementById(btn.dataset.target);
+      if (!body) return;
+      var last = body.querySelector('tr:last-child');
+      if (!last) return;
+      var clone = last.cloneNode(true);
+      clone.querySelectorAll('input').forEach(function (el) {
+        if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+        else el.value = '';
+      });
+      clone.querySelectorAll('select').forEach(function (el) { el.selectedIndex = 0; });
+      body.appendChild(clone);
+      // focus first input in the new row for a fast keyboard flow
+      var first = clone.querySelector('select, input');
+      if (first) first.focus();
+    });
+  })();
+</script>

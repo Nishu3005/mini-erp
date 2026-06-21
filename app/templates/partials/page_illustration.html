@@ -12,15 +12,18 @@
      A soft gradient at the top edge blends the image into the page so it doesn't look bolted on. */
   .page-illustration {
     position: relative;
-   
     width: 100%;
+    /* Slim footer banner: never taller than 320px, scales down to 180px on mobile. */
+    height: clamp(300px, 22vw, 390px);
     overflow: hidden;
     background: var(--canvas);
   }
   .page-illustration__img {
     display: block;
     width: 100%;
-    height: auto;          /* natural aspect ratio, full viewport width, no letterboxing */
+    height: 100%;
+    object-fit: cover;            /* fill the slim banner; crop the long edges */
+    object-position: center 40%;  /* favor the upper-middle of the artwork (subjects sit there) */
   }
   /* Hairline above the banner so it reads as a deliberate section, not a stray image */
   .page-illustration::before {

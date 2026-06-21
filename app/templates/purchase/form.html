@@ -87,7 +87,7 @@
   <h3>Products</h3>
   <table class="list-table">
     <thead><tr><th>Product</th><th class="num">Ordered Qty</th></tr></thead>
-    <tbody>
+    <tbody id="purchaseLines">
       {% for i in range(3) %}
       <tr>
         <td><select class="input" name="product_id"><option value="">—</option>
@@ -97,6 +97,7 @@
       {% endfor %}
     </tbody>
   </table>
+  {% with target = 'purchaseLines' %}{% include "partials/add_line_button.html" %}{% endwith %}
 </form>
 
 {% else %}

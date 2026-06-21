@@ -97,7 +97,7 @@
   <h3>Components</h3>
   <table class="list-table">
     <thead><tr><th>Component</th><th class="num">To Consume</th></tr></thead>
-    <tbody>
+    <tbody id="bomLines">
       {% set rows = (bom.components|list) if bom else [] %}
       {% for i in range(5) %}
         {% set c = rows[i] if i < rows|length else none %}
@@ -112,6 +112,9 @@
       {% endfor %}
     </tbody>
   </table>
+  {% if can_edit %}
+    {% with target = 'bomLines' %}{% include "partials/add_line_button.html" %}{% endwith %}
+  {% endif %}
 
   {% if bom and bom.operations %}
   <h3>Work Orders (operations)</h3>
