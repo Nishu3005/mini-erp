@@ -48,7 +48,10 @@ def produce(order, consumes: dict = None):
     """Finish the MO: consume components, produce the finished good. consumes maps comp_id->qty.
 
     If `consumes` is omitted, each component consumes its full to_consume.
-    GATED: every Work Order must be in `done` state (Finding D — operator routing).
+    GATED on:
+      - MO is Confirmed or In-Progress (not Draft/Done/Cancelled).
+      - Every Work Order is `done` (Finding D — operator routing).
+      - Every component has enough On Hand to cover its consume qty (no negative stock).
     """
     if order.status not in ("confirmed", "in_progress"):
         raise ManufacturingError("MO must be Confirmed or In-Progress to produce.")
@@ -59,6 +62,24 @@ def produce(order, consumes: dict = None):
             f"Cannot produce: {pending} work order(s) still pending. "
             "Operators must Start and Finish each work order first.")
     consumes = consumes or {}
+
+    # Pre-flight stock check across ALL components, before we touch the ledger.
+    # Reason this matters: record_movement() just adds the delta; SQLite has no >= 0 constraint, so
+    # without this check On Hand silently goes negative and the MO closes anyway. The whole point
+    # of the engine is "no module bypasses stock reality" — this is where we enforce it.
+    shortages = []
+    for comp in order.components:
+        qty = consumes.get(comp.id)
+        qty = Decimal(str(qty)) if qty not in (None, "") else Decimal(comp.to_consume or 0)
+        if qty <= 0:
+            continue
+        on_hand = Decimal(comp.product.on_hand_qty or 0)
+        if qty > on_hand:
+            shortages.append((comp.product.name, qty, on_hand))
+    if shortages:
+        details = "; ".join(
+            f"{name} needs {need} but only {have} on hand" for name, need, have in shortages)
+        raise ManufacturingError(f"Cannot produce — component shortage: {details}.")
 
     with atomic():
         # consume components

@@ -85,6 +85,41 @@ def test_C_adjust_stock_moves_via_ledger(db, seeded):
     assert entry is not None and entry.qty_delta == Decimal("3")
 
 
+def test_produce_blocked_when_components_short(db, seeded):
+    """Finding (this session): produce() must reject if any component has insufficient On Hand.
+
+    Without this gate, record_movement() blindly subtracts and SQLite has no >=0 check,
+    so On Hand silently goes negative and the MO still closes. Reality: you cannot build a
+    table out of zero planks.
+    """
+    from app.models.manufacturing import ManufacturingOrder, MoComponent
+    from app.services import manufacturing as mfg_svc
+    import pytest as _pytest
+
+    p = seeded["product"]
+    # Component product with NOT ENOUGH stock (need 10, only 3 on hand)
+    comp_prod = Product(reference=sequences.next_reference("PRD"), name="Scarce Plank",
+                        sales_price=Decimal("5"), cost_price=Decimal("2"),
+                        on_hand_qty=Decimal("3"))
+    db.session.add(comp_prod); db.session.flush()
+
+    mo = ManufacturingOrder(reference=sequences.next_reference("MO"), status="draft",
+                            finished_product_id=p.id, quantity=Decimal("1"))
+    db.session.add(mo); db.session.flush()
+    db.session.add(MoComponent(mo_id=mo.id, product_id=comp_prod.id, to_consume=Decimal("10")))
+    db.session.commit()
+
+    mfg_svc.confirm(mo)
+    # No work orders, so the WO gate is satisfied. The component gate must still fire.
+    with _pytest.raises(mfg_svc.ManufacturingError, match="component shortage"):
+        mfg_svc.produce(mo)
+
+    # The MO stays Confirmed; On Hand is untouched.
+    db.session.refresh(mo); db.session.refresh(comp_prod)
+    assert mo.status == "confirmed"
+    assert comp_prod.on_hand_qty == Decimal("3")
+
+
 def test_D_produce_blocked_until_work_orders_done(db, seeded):
     """Finding D: produce() must reject MOs whose work orders aren't all Done."""
     from app.models.manufacturing import ManufacturingOrder, MoComponent, WorkOrder

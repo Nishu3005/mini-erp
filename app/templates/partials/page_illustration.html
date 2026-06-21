@@ -14,7 +14,7 @@
     position: relative;
     width: 100%;
     /* Slim footer banner: never taller than 320px, scales down to 180px on mobile. */
-    height: clamp(300px, 22vw, 390px);
+    height: 600px;
     overflow: hidden;
     background: var(--canvas);
   }
@@ -23,7 +23,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;            /* fill the slim banner; crop the long edges */
-    object-position: center 40%;  /* favor the upper-middle of the artwork (subjects sit there) */
+    object-position: center 100%;  /* favor the upper-middle of the artwork (subjects sit there) */
   }
   /* Hairline above the banner so it reads as a deliberate section, not a stray image */
   .page-illustration::before {

@@ -40,6 +40,22 @@ def list_view():
                            mine=mine, view=view, search=search, page_meta=page_meta)
 
 
+def _bom_preview_payload():
+    """JSON-safe summary of every BoM and its components' current on-hand, for the
+    Raw-Material Check panel on the MO create form. Keyed by bom_id (as string for JSON)."""
+    payload = {}
+    for b in Bom.query.all():
+        payload[str(b.id)] = {
+            "components": [
+                {"name": c.product.name,
+                 "to_consume": float(c.to_consume or 0),
+                 "on_hand": float(c.product.on_hand_qty or 0)}
+                for c in b.components
+            ],
+        }
+    return payload
+
+
 @bp.route("/new", methods=["GET", "POST"])
 @login_required
 @access.require("manufacturing", "create")
@@ -53,7 +69,8 @@ def create():
             flash(str(e), "error")
     return render_template("manufacturing/form.html", order=None,
                            products=Product.query.all(), boms=Bom.query.all(),
-                           assignees=User.query.all(), logs=[])
+                           assignees=User.query.all(), logs=[],
+                           bom_preview_data=_bom_preview_payload())
 
 
 @bp.route("/<int:order_id>")
@@ -65,7 +82,8 @@ def form(order_id):
             .order_by(AuditLog.timestamp.desc()).all())
     return render_template("manufacturing/form.html", order=order,
                            products=Product.query.all(), boms=Bom.query.all(),
-                           assignees=User.query.all(), logs=logs)
+                           assignees=User.query.all(), logs=logs,
+                           bom_preview_data={})
 
 
 @bp.route("/<int:order_id>/confirm", methods=["POST"])
