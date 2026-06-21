@@ -1,7 +1,7 @@
-{# Top bar per the breakdown wireframe:
-   - Hamburger (left)  -> Master Menu panel slides in from the RIGHT.
-   - App Logo + Name   -> centered.
-   - User Avatar (right)-> Profile/login panel slides in from the LEFT.
+{# Top bar — panels open on the SAME side as the button that triggers them:
+   - Hamburger (left)   -> Master Menu panel slides in from the LEFT.
+   - App Logo + Name    -> centered.
+   - User Avatar (right) -> Profile/login panel slides in from the RIGHT.
    This partial owns its own internal CSS (page-scoped style block). #}
 
 <style>
@@ -93,8 +93,8 @@
   </button>
 </header>
 
-{# Profile / login panel — slides from the LEFT #}
-<aside id="profile-panel" class="side-panel side-panel--left" aria-label="Profile">
+{# Profile / login panel — slides from the RIGHT (avatar is in the top-right) #}
+<aside id="profile-panel" class="side-panel side-panel--right" aria-label="Profile">
   <div class="side-panel__head">
     <span>Profile</span>
     <button class="side-panel__close"
@@ -113,8 +113,8 @@
   </div>
 </aside>
 
-{# Master Menu — slides from the RIGHT #}
-<aside id="master-menu" class="side-panel side-panel--right" aria-label="Master menu">
+{# Master Menu — slides from the LEFT (hamburger is in the top-left) #}
+<aside id="master-menu" class="side-panel side-panel--left" aria-label="Master menu">
   <div class="side-panel__head">
     <span>Master Menu</span>
     <button class="side-panel__close"

@@ -1,0 +1,262 @@
+[
+  {
+    "vendor": "Zenith Glass Works",
+    "responsible": "purchase.vijay",
+    "status": "draft",
+    "created_offset_days": -59,
+    "lines": [
+      {
+        "product": "Large Mahogany Bookshelf",
+        "ordered_qty": 237,
+        "received_qty": 0
+      }
+    ]
+  },
+  {
+    "vendor": "Cherry Upholstery Mart",
+    "responsible": "purchase.nav",
+    "status": "fully_received",
+    "created_offset_days": -6,
+    "lines": [
+      {
+        "product": "Compact Beech Lounge Sofa",
+        "ordered_qty": 291,
+        "received_qty": 291
+      }
+    ]
+  },
+  {
+    "vendor": "Atlas Fabric House",
+    "responsible": "purchase.fai",
+    "status": "cancelled",
+    "created_offset_days": -57,
+    "lines": [
+      {
+        "product": "Deluxe Beech Three-Seater Sofa",
+        "ordered_qty": 274,
+        "received_qty": 0
+      }
+    ]
+  },
+  {
+    "vendor": "Galaxy Hardware Industries",
+    "responsible": "purchase.roh",
+    "status": "fully_received",
+    "created_offset_days": -58,
+    "lines": [
+      {
+        "product": "Classic Cedar Single Bed",
+        "ordered_qty": 500,
+        "received_qty": 500
+      }
+    ]
+  },
+  {
+    "vendor": "Zenith Glass Works",
+    "responsible": "purchase.fai",
+    "status": "fully_received",
+    "created_offset_days": -49,
+    "lines": [
+      {
+        "product": "Compact Beech Cushion (foam)",
+        "ordered_qty": 484,
+        "received_qty": 484
+      },
+      {
+        "product": "Classic Cedar Single Bed",
+        "ordered_qty": 98,
+        "received_qty": 98
+      }
+    ]
+  },
+  {
+    "vendor": "Surya Foam Industries",
+    "responsible": "purchase.fai",
+    "status": "confirmed",
+    "created_offset_days": -74,
+    "lines": [
+      {
+        "product": "Classic Cedar Single Bed",
+        "ordered_qty": 89,
+        "received_qty": 0
+      }
+    ]
+  },
+  {
+    "vendor": "Atlas Fabric House",
+    "responsible": "purchase.rup",
+    "status": "partially_received",
+    "created_offset_days": -49,
+    "lines": [
+      {
+        "product": "Small Beech Wardrobe",
+        "ordered_qty": 468,
+        "received_qty": 267
+      },
+      {
+        "product": "Wooden Table",
+        "ordered_qty": 296,
+        "received_qty": 21
+      }
+    ]
+  },
+  {
+    "vendor": "Atlas Timber Traders",
+    "responsible": "purchase.vin",
+    "status": "fully_received",
+    "created_offset_days": -41,
+    "lines": [
+      {
+        "product": "Large Beech Single Bed",
+        "ordered_qty": 486,
+        "received_qty": 486
+      },
+      {
+        "product": "Office Chair",
+        "ordered_qty": 225,
+        "received_qty": 225
+      }
+    ]
+  },
+  {
+    "vendor": "Chandra Fabric House",
+    "responsible": "purchase.vin",
+    "status": "confirmed",
+    "created_offset_days": -42,
+    "lines": [
+      {
+        "product": "Dining Table",
+        "ordered_qty": 199,
+        "received_qty": 0
+      },
+      {
+        "product": "Compact Mahogany Wooden Top (5ft)",
+        "ordered_qty": 216,
+        "received_qty": 0
+      },
+      {
+        "product": "Small Rosewood Hinges (pack)",
+        "ordered_qty": 189,
+        "received_qty": 0
+      }
+    ]
+  },
+  {
+    "vendor": "Cherry Upholstery Mart",
+    "responsible": "purchase.nav",
+    "status": "fully_received",
+    "created_offset_days": -25,
+    "lines": [
+      {
+        "product": "Premium Cedar Wooden Chair",
+        "ordered_qty": 107,
+        "received_qty": 107
+      }
+    ]
+  },
+  {
+    "vendor": "Grand Steel Industries",
+    "responsible": "purchase.vin",
+    "status": "partially_received",
+    "created_offset_days": -18,
+    "lines": [
+      {
+        "product": "Small Beech Wardrobe",
+        "ordered_qty": 180,
+        "received_qty": 141
+      },
+      {
+        "product": "Medium Mahogany Single Bed",
+        "ordered_qty": 209,
+        "received_qty": 83
+      }
+    ]
+  },
+  {
+    "vendor": "Sai Metal Works",
+    "responsible": "purchase.ush",
+    "status": "confirmed",
+    "created_offset_days": -72,
+    "lines": [
+      {
+        "product": "Classic Walnut Brackets (pack)",
+        "ordered_qty": 186,
+        "received_qty": 0
+      },
+      {
+        "product": "Medium Mahogany Single Bed",
+        "ordered_qty": 298,
+        "received_qty": 0
+      },
+      {
+        "product": "Classic Walnut Three-Seater Sofa",
+        "ordered_qty": 40,
+        "received_qty": 0
+      }
+    ]
+  },
+  {
+    "vendor": "Atlas Timber Traders",
+    "responsible": "purchase.ush",
+    "status": "fully_received",
+    "created_offset_days": -58,
+    "lines": [
+      {
+        "product": "Classic Beech Wooden Top (6ft)",
+        "ordered_qty": 273,
+        "received_qty": 273
+      },
+      {
+        "product": "Compact Birch Two-Seater Sofa",
+        "ordered_qty": 215,
+        "received_qty": 215
+      }
+    ]
+  },
+  {
+    "vendor": "Krishna Glass Works",
+    "responsible": "purchase.roh",
+    "status": "confirmed",
+    "created_offset_days": -42,
+    "lines": [
+      {
+        "product": "Small Birch Wooden Top (6ft)",
+        "ordered_qty": 238,
+        "received_qty": 0
+      },
+      {
+        "product": "Small Rosewood Three-Seater Sofa",
+        "ordered_qty": 425,
+        "received_qty": 0
+      },
+      {
+        "product": "Deluxe Beech Hinges (pack)",
+        "ordered_qty": 78,
+        "received_qty": 0
+      }
+    ]
+  },
+  {
+    "vendor": "Zenith Glass Works",
+    "responsible": "purchase.ush",
+    "status": "fully_received",
+    "created_offset_days": -43,
+    "lines": [
+      {
+        "product": "Premium Walnut Wooden Top (6ft)",
+        "ordered_qty": 34,
+        "received_qty": 34
+      },
+      {
+        "product": "Classic Cedar Single Bed",
+        "ordered_qty": 384,
+        "received_qty": 384
+      },
+      {
+        "product": "Medium Birch Wardrobe",
+        "ordered_qty": 422,
+        "received_qty": 422
+      }
+    ]
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 18,
+    "assignee": "mfg.meera29",
+    "status": "done",
+    "created_offset_days": -7,
+    "schedule_offset_days": -12
+  },
+  {
+    "finished_product": "Dining Table",
+    "bom": "Dining Table",
+    "quantity": 2,
+    "assignee": "mfg.siddhart",
+    "status": "done",
+    "created_offset_days": -16,
+    "schedule_offset_days": -5
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 17,
+    "assignee": "mfg.dinesh",
+    "status": "in_progress",
+    "created_offset_days": -40,
+    "schedule_offset_days": 27
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 15,
+    "assignee": "mfg.dinesh",
+    "status": "in_progress",
+    "created_offset_days": -15,
+    "schedule_offset_days": 13
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 16,
+    "assignee": "mfg.smita24",
+    "status": "confirmed",
+    "created_offset_days": -25,
+    "schedule_offset_days": 20
+  },
+  {
+    "finished_product": "Dining Table",
+    "bom": "Dining Table",
+    "quantity": 3,
+    "assignee": "mfg.priya22",
+    "status": "confirmed",
+    "created_offset_days": -26,
+    "schedule_offset_days": 19
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 8,
+    "assignee": "mfg.siddhart",
+    "status": "done",
+    "created_offset_days": -3,
+    "schedule_offset_days": -8
+  },
+  {
+    "finished_product": "Dining Table",
+    "bom": "Dining Table",
+    "quantity": 14,
+    "assignee": "mfg.reena25",
+    "status": "confirmed",
+    "created_offset_days": -6,
+    "schedule_offset_days": 26
+  },
+  {
+    "finished_product": "Dining Table",
+    "bom": "Dining Table",
+    "quantity": 6,
+    "assignee": "mfg.lakshmi2",
+    "status": "in_progress",
+    "created_offset_days": -39,
+    "schedule_offset_days": 22
+  },
+  {
+    "finished_product": "Wooden Table",
+    "bom": "Wooden Table",
+    "quantity": 6,
+    "assignee": "mfg.sachin26",
+    "status": "done",
+    "created_offset_days": -12,
+    "schedule_offset_days": -6
+  }
+]

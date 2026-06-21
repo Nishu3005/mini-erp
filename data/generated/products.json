@@ -1,0 +1,427 @@
+[
+  {
+    "name": "Classic Cedar Wooden Top (6ft)",
+    "sales_price": 807.85,
+    "cost_price": 384.92,
+    "on_hand_qty": 171,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Standard Beech Side Table",
+    "sales_price": 1209.55,
+    "cost_price": 622.05,
+    "on_hand_qty": 10,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Medium Mahogany Single Bed",
+    "sales_price": 10704.31,
+    "cost_price": 5273.28,
+    "on_hand_qty": 9,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Pine Wooden Bed",
+    "sales_price": 20013.56,
+    "cost_price": 10234.21,
+    "on_hand_qty": 8,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing"
+  },
+  {
+    "name": "Classic Beech Dining Table",
+    "sales_price": 5685.93,
+    "cost_price": 2937.73,
+    "on_hand_qty": 27,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing"
+  },
+  {
+    "name": "Classic Walnut Brackets (pack)",
+    "sales_price": 31.18,
+    "cost_price": 14.43,
+    "on_hand_qty": 2333,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Cherry Screws (pack)",
+    "sales_price": 4.75,
+    "cost_price": 2.57,
+    "on_hand_qty": 6272,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Birch Two-Seater Sofa",
+    "sales_price": 7597.58,
+    "cost_price": 3861.36,
+    "on_hand_qty": 3,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing"
+  },
+  {
+    "name": "Deluxe Birch Upholstery Fabric (m)",
+    "sales_price": 163.75,
+    "cost_price": 73.69,
+    "on_hand_qty": 114,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Walnut Wooden Top (6ft)",
+    "sales_price": 687.99,
+    "cost_price": 327.81,
+    "on_hand_qty": 41,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Walnut Three-Seater Sofa",
+    "sales_price": 15335.62,
+    "cost_price": 8084.06,
+    "on_hand_qty": 5,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing"
+  },
+  {
+    "name": "Deluxe Teak Door Frame",
+    "sales_price": 1229.8,
+    "cost_price": 645.65,
+    "on_hand_qty": 95,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Walnut Office Chair",
+    "sales_price": 2381.41,
+    "cost_price": 1160.94,
+    "on_hand_qty": 50,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Birch Office Chair",
+    "sales_price": 2255.11,
+    "cost_price": 1099.36,
+    "on_hand_qty": 31,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Beech Lounge Sofa",
+    "sales_price": 11136.68,
+    "cost_price": 5846.76,
+    "on_hand_qty": 9,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Large Beech Single Bed",
+    "sales_price": 9306.47,
+    "cost_price": 4584.66,
+    "on_hand_qty": 1,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Birch Single Bed",
+    "sales_price": 8748.0,
+    "cost_price": 4309.54,
+    "on_hand_qty": 3,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Walnut Window Frame",
+    "sales_price": 1111.89,
+    "cost_price": 579.35,
+    "on_hand_qty": 114,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Birch Dining Chair",
+    "sales_price": 1781.02,
+    "cost_price": 845.98,
+    "on_hand_qty": 34,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Cedar Wooden Chair",
+    "sales_price": 1281.13,
+    "cost_price": 672.59,
+    "on_hand_qty": 16,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Cherry Wooden Chair",
+    "sales_price": 1281.81,
+    "cost_price": 672.95,
+    "on_hand_qty": 79,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Cedar Single Bed",
+    "sales_price": 10614.61,
+    "cost_price": 5229.09,
+    "on_hand_qty": 13,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Beech Wooden Top (6ft)",
+    "sales_price": 956.29,
+    "cost_price": 455.64,
+    "on_hand_qty": 137,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Rosewood Lounge Sofa",
+    "sales_price": 13662.16,
+    "cost_price": 7172.63,
+    "on_hand_qty": 0,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Standard Pine Window Frame",
+    "sales_price": 1072.85,
+    "cost_price": 559.01,
+    "on_hand_qty": 128,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Beech Kitchen Cabinet",
+    "sales_price": 11765.29,
+    "cost_price": 5968.21,
+    "on_hand_qty": 13,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Mahogany Bookshelf",
+    "sales_price": 4309.02,
+    "cost_price": 2181.44,
+    "on_hand_qty": 2,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Mahogany Cushion (foam)",
+    "sales_price": 291.53,
+    "cost_price": 136.43,
+    "on_hand_qty": 402,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Standard Cherry Window Frame",
+    "sales_price": 1007.75,
+    "cost_price": 525.09,
+    "on_hand_qty": 144,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Cedar Bookshelf",
+    "sales_price": 4261.25,
+    "cost_price": 2157.26,
+    "on_hand_qty": 6,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Large Mahogany Bookshelf",
+    "sales_price": 5375.57,
+    "cost_price": 2721.38,
+    "on_hand_qty": 6,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Medium Cedar Executive Chair",
+    "sales_price": 3676.17,
+    "cost_price": 1911.61,
+    "on_hand_qty": 11,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Mahogany Wooden Top (5ft)",
+    "sales_price": 760.37,
+    "cost_price": 371.49,
+    "on_hand_qty": 122,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Beech Hinges (pack)",
+    "sales_price": 94.77,
+    "cost_price": 47.38,
+    "on_hand_qty": 2637,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Medium Pine Door Frame",
+    "sales_price": 1372.55,
+    "cost_price": 720.59,
+    "on_hand_qty": 156,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Mahogany Dining Chair",
+    "sales_price": 1847.89,
+    "cost_price": 877.75,
+    "on_hand_qty": 15,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Birch Single Bed",
+    "sales_price": 11017.84,
+    "cost_price": 5427.73,
+    "on_hand_qty": 10,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Walnut Bookshelf",
+    "sales_price": 5216.38,
+    "cost_price": 2640.79,
+    "on_hand_qty": 2,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Teak Glass Panel",
+    "sales_price": 894.48,
+    "cost_price": 426.2,
+    "on_hand_qty": 102,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Medium Teak Bunk Bed",
+    "sales_price": 15254.6,
+    "cost_price": 8008.66,
+    "on_hand_qty": 5,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Teak Two-Seater Sofa",
+    "sales_price": 8085.19,
+    "cost_price": 4109.18,
+    "on_hand_qty": 11,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Beech Three-Seater Sofa",
+    "sales_price": 13593.35,
+    "cost_price": 7165.64,
+    "on_hand_qty": 3,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Rosewood Glass Panel",
+    "sales_price": 809.33,
+    "cost_price": 385.62,
+    "on_hand_qty": 51,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Premium Beech Wardrobe",
+    "sales_price": 17383.23,
+    "cost_price": 8800.26,
+    "on_hand_qty": 6,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Cedar Wooden Chair",
+    "sales_price": 1382.53,
+    "cost_price": 725.83,
+    "on_hand_qty": 12,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Beech Wardrobe",
+    "sales_price": 13787.21,
+    "cost_price": 6979.78,
+    "on_hand_qty": 6,
+    "procure_on_demand": true,
+    "procure_method": "manufacturing"
+  },
+  {
+    "name": "Small Birch Dining Chair",
+    "sales_price": 1508.47,
+    "cost_price": 716.52,
+    "on_hand_qty": 60,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Walnut Brackets (pack)",
+    "sales_price": 35.51,
+    "cost_price": 16.44,
+    "on_hand_qty": 1330,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Rosewood Hinges (pack)",
+    "sales_price": 104.34,
+    "cost_price": 52.17,
+    "on_hand_qty": 2645,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Beech Hinges (pack)",
+    "sales_price": 76.05,
+    "cost_price": 38.03,
+    "on_hand_qty": 2106,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Compact Beech Cushion (foam)",
+    "sales_price": 281.38,
+    "cost_price": 131.69,
+    "on_hand_qty": 443,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Oak LED Strip (m)",
+    "sales_price": 256.9,
+    "cost_price": 136.63,
+    "on_hand_qty": 403,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Rosewood Three-Seater Sofa",
+    "sales_price": 16560.17,
+    "cost_price": 8729.58,
+    "on_hand_qty": 1,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Small Birch Wooden Top (6ft)",
+    "sales_price": 797.24,
+    "cost_price": 379.86,
+    "on_hand_qty": 45,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Medium Birch Wardrobe",
+    "sales_price": 13628.33,
+    "cost_price": 6899.34,
+    "on_hand_qty": 2,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Deluxe Rosewood Wooden Chair",
+    "sales_price": 1209.72,
+    "cost_price": 635.1,
+    "on_hand_qty": 6,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Classic Walnut Three-Seater Sofa",
+    "sales_price": 16297.15,
+    "cost_price": 8590.93,
+    "on_hand_qty": 0,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Standard Walnut Wardrobe",
+    "sales_price": 13992.22,
+    "cost_price": 7083.56,
+    "on_hand_qty": 8,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Standard Walnut Brackets (pack)",
+    "sales_price": 29.99,
+    "cost_price": 13.88,
+    "on_hand_qty": 245,
+    "procure_on_demand": false
+  },
+  {
+    "name": "Standard Rosewood Bookshelf",
+    "sales_price": 5379.36,
+    "cost_price": 2723.3,
+    "on_hand_qty": 5,
+    "procure_on_demand": false
+  }
+]

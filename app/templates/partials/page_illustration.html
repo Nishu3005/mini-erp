@@ -1,0 +1,43 @@
+{# Per-page footer illustration banner. Renders nothing if no images exist for the given key.
+   Include with: {% set illustration_page = 'sales' %}{% include "partials/page_illustration.html" %}
+   Or call directly: {% with illustration_page = 'profile' %}{% include "..." %}{% endwith %} #}
+
+{# Page key is inferred from the active blueprint by app.services.illustrations.
+   Templates can still override with `{% set illustration_page = 'sales' %}` BEFORE
+   extending base — but it's no longer required. #}
+{% set _img = page_illustration(illustration_page|default(none)) %}
+{% if _img %}
+<style>
+  /* Full-bleed footer banner: no max-width, no side padding, no border, no corner radius.
+     A soft gradient at the top edge blends the image into the page so it doesn't look bolted on. */
+  .page-illustration {
+    position: relative;
+   
+    width: 100%;
+    overflow: hidden;
+    background: var(--canvas);
+  }
+  .page-illustration__img {
+    display: block;
+    width: 100%;
+    height: auto;          /* natural aspect ratio, full viewport width, no letterboxing */
+  }
+  /* Hairline above the banner so it reads as a deliberate section, not a stray image */
+  .page-illustration::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: var(--hairline-strong);
+    z-index: 1;
+  }
+  /* Subtle top-edge fade so the image emerges out of the page background */
+  .page-illustration::after {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 80px;
+    background: linear-gradient(to bottom, var(--canvas), transparent);
+    pointer-events: none;
+  }
+</style>
+<aside class="page-illustration" aria-hidden="true">
+  <img class="page-illustration__img" src="{{ _img }}" alt="">
+</aside>
+{% endif %}

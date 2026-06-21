@@ -80,13 +80,24 @@ def reserved_qty_map() -> dict:
 
 
 def record_movement(product, qty_delta: Decimal, source: str, source_ref: str) -> StockLedger:
-    """Apply a signed On-Hand change and append a stock-ledger row. Caller commits."""
+    """Apply a signed On-Hand change and append a stock-ledger row. Caller commits.
+
+    Concurrency-safe: takes a row-level lock on the product row before reading/writing
+    `on_hand_qty` so two simultaneous receives/produces never overwrite each other.
+    (SQLite serialises writes anyway; this matters on Postgres/MySQL — same code, real lock.)
+    """
     qty_delta = Decimal(qty_delta)
-    product.on_hand_qty = Decimal(product.on_hand_qty or 0) + qty_delta
+    from app.models.product import Product
+    # SELECT ... FOR UPDATE on the product row — fresh read inside the lock.
+    locked = db.session.query(Product).filter(Product.id == product.id) \
+        .with_for_update().one()
+    locked.on_hand_qty = Decimal(locked.on_hand_qty or 0) + qty_delta
+    # Keep the caller-passed `product` object in sync so callers reading it after see the new value.
+    product.on_hand_qty = locked.on_hand_qty
     entry = StockLedger(
-        product_id=product.id,
+        product_id=locked.id,
         qty_delta=qty_delta,
-        balance_after=product.on_hand_qty,
+        balance_after=locked.on_hand_qty,
         source=source,
         source_ref=source_ref,
         user_id=getattr(current_user, "id", None),

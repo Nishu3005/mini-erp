@@ -101,6 +101,40 @@ def produce(order_id):
     return redirect(url_for("manufacturing.form", order_id=order.id))
 
 
+@bp.route("/<int:order_id>/work-orders/<int:wo_id>/start", methods=["POST"])
+@login_required
+@access.require("manufacturing", "production_entry")
+def wo_start(order_id, wo_id):
+    wo = WorkOrder.query.get_or_404(wo_id)
+    if wo.mo_id != order_id:
+        flash("Work order does not belong to this MO.", "error")
+        return redirect(url_for("manufacturing.form", order_id=order_id))
+    try:
+        mfg_svc.start_work_order(wo, by_user_id=current_user.id)
+        flash(f"Started: {wo.operation}.", "success")
+    except mfg_svc.ManufacturingError as e:
+        flash(str(e), "error")
+    return redirect(url_for("manufacturing.form", order_id=order_id))
+
+
+@bp.route("/<int:order_id>/work-orders/<int:wo_id>/finish", methods=["POST"])
+@login_required
+@access.require("manufacturing", "production_entry")
+def wo_finish(order_id, wo_id):
+    wo = WorkOrder.query.get_or_404(wo_id)
+    if wo.mo_id != order_id:
+        flash("Work order does not belong to this MO.", "error")
+        return redirect(url_for("manufacturing.form", order_id=order_id))
+    override = request.form.get("real_duration")
+    minutes = int(override) if override and override.isdigit() else None
+    try:
+        mfg_svc.finish_work_order(wo, real_duration_minutes=minutes)
+        flash(f"Finished: {wo.operation} ({wo.real_duration} min).", "success")
+    except mfg_svc.ManufacturingError as e:
+        flash(str(e), "error")
+    return redirect(url_for("manufacturing.form", order_id=order_id))
+
+
 @bp.route("/<int:order_id>/cancel", methods=["POST"])
 @login_required
 @access.require("manufacturing", "production_entry")

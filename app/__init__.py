@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from flask import Flask, render_template
+from sqlalchemy.exc import OperationalError
 
 from config import config_by_name
 from app.extensions import csrf, db, login_manager, migrate
@@ -27,11 +28,32 @@ def create_app(config_name: str = "dev") -> Flask:
 
     from app import models  # noqa: F401  (register models with metadata)
 
+    # Self-heal: if the DB file is missing the core `user` table (fresh clone, deleted file,
+    # corrupted migration state), create everything from the ORM metadata. This makes the app
+    # bootable even if the user never ran `flask reset-db`. Idempotent — no-op when tables exist.
+    with app.app_context():
+        from sqlalchemy import inspect
+        try:
+            if not inspect(db.engine).has_table("user"):
+                db.create_all()
+        except Exception:
+            # If even the inspector fails (no DB file at all), create_all from scratch.
+            db.create_all()
+
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(models.User, int(user_id))
+        try:
+            return db.session.get(models.User, int(user_id))
+        except OperationalError:
+            # DB got wiped/dropped while we were running (e.g. `flask reset-db` in another shell,
+            # a test suite, manual file delete). Recreate the schema and treat this request as
+            # anonymous — the user's next click will land them on /login.
+            db.session.rollback()
+            db.create_all()
+            return None
 
     from app.routes.admin import bp as admin_bp
+    from app.routes.api import bp as api_bp
     from app.routes.audit import bp as audit_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.bom import bp as bom_bp
@@ -45,6 +67,8 @@ def create_app(config_name: str = "dev") -> Flask:
     from app.services.urlscheme import bp as scoped_bp
 
     app.register_blueprint(admin_bp)
+    app.register_blueprint(api_bp)                 # /api/v1/...  (JWT-guarded, see spec/jwt-api.md)
+    csrf.exempt(api_bp)                            # API uses Bearer JWT, not session CSRF
     app.register_blueprint(audit_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(bom_bp)
@@ -66,6 +90,10 @@ def create_app(config_name: str = "dev") -> Flask:
     # also expose route_for as a Jinja global so macros (no context) can use it
     from app.services.urlscheme import route_for as _route_for
     app.jinja_env.globals["route_for"] = _route_for
+
+    # per-page footer illustration (returns None if static/illustrations/<page>/ is empty)
+    from app.services.illustrations import page_illustration_url as _page_illustration
+    app.jinja_env.globals["page_illustration"] = _page_illustration
 
     @app.errorhandler(403)
     def forbidden(_e):
@@ -90,6 +118,31 @@ def _register_cli(app: Flask) -> None:
         db.create_all()
         click.echo("Tables created.")
 
+    @app.cli.command("reset-db")
+    def reset_db():
+        """One-shot: nuke the SQLite file, recreate tables via db.create_all(), reseed.
+
+        The idiot-proof recovery: whatever mess the DB is in, this puts it back to a clean
+        seeded state in seconds. (Skips Alembic — uses metadata.create_all directly so it works
+        even if migration state is corrupted.)
+        """
+        import os
+        from app.services import seed
+        # 1. Drop ALL tables in the live engine (handles file-locked case better than os.remove)
+        db.drop_all()
+        # 2. Recreate every table from the live ORM metadata
+        db.create_all()
+        # 3. Stamp Alembic to head so future migrations work
+        try:
+            from flask_migrate import stamp
+            stamp(revision="head")
+        except Exception:
+            pass
+        # 4. Seed
+        summary = seed.seed()
+        click.echo("DB reset.")
+        click.echo("Seeded: " + ", ".join(f"{k}={v}" for k, v in summary.items()))
+
     @app.cli.command("seed-admin")
     @click.option("--login-id", default="admin1")
     @click.option("--email", default="admin@shiv.local")
@@ -109,7 +162,7 @@ def _register_cli(app: Flask) -> None:
     @app.cli.command("seed-data")
     @click.option("--reset", is_flag=True, help="Wipe existing data first, then reload.")
     def seed_data(reset):
-        """Load believable starter data from the data/ folder."""
+        """Load JSON from data/ and data/generated/ into the DB (fast, bulk-insert)."""
         from app.services import seed
 
         if seed.has_data() and not reset:
@@ -120,3 +173,4 @@ def _register_cli(app: Flask) -> None:
             click.echo("Existing data wiped.")
         summary = seed.seed()
         click.echo("Seeded: " + ", ".join(f"{k}={v}" for k, v in summary.items()))
+

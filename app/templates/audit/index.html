@@ -5,6 +5,7 @@
   'delete':'Deleted','deliver':'Delivered','receive':'Received','produce':'Produced'} %}
 
 {% block content %}
+{% set illustration_page = "audit" %}
 <style>
   /* audit/index — the densest data page in the app:
        4 stat cards (colored), filter bar, paginated 9-column table.
@@ -107,10 +108,10 @@
 
 {# --- 4 stat cards --- #}
 <div class="stat-cards">
-  <div class="stat-card stat-card--total"><span class="stat-card__n">{{ stats.total }}</span>Total Logs<small>All time logs</small></div>
-  <div class="stat-card stat-card--create"><span class="stat-card__n">{{ stats.create }}</span>Create Actions<small>Records Created</small></div>
-  <div class="stat-card stat-card--update"><span class="stat-card__n">{{ stats.update }}</span>Update Actions<small>Records Updated</small></div>
-  <div class="stat-card stat-card--delete"><span class="stat-card__n">{{ stats.delete }}</span>Delete Actions<small>Records Deleted</small></div>
+  <div class="stat-card stat-card--total"><span class="stat-card__n">{{ stats['total'] }}</span>Total Logs<small>All time logs</small></div>
+  <div class="stat-card stat-card--create"><span class="stat-card__n">{{ stats['create'] }}</span>Create Actions<small>Records Created</small></div>
+  <div class="stat-card stat-card--update"><span class="stat-card__n">{{ stats['update'] }}</span>Update Actions<small>Records Updated</small></div>
+  <div class="stat-card stat-card--delete"><span class="stat-card__n">{{ stats['delete'] }}</span>Delete Actions<small>Records Deleted</small></div>
 </div>
 
 {# --- filter bar --- #}

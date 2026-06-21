@@ -1,0 +1,2 @@
+# Generated seed JSON lands here.
+# Run `flask gen-data` to (re)create the files in this folder; `flask seed-data` then reads them.

@@ -2,6 +2,7 @@
 {% block title %}{{ bom.reference if bom else 'New BoM' }}{% endblock %}
 
 {% block content %}
+{% set illustration_page = "bom" %}
 {% set can_edit = access_can('manufacturing','edit_bom') %}
 
 <style>

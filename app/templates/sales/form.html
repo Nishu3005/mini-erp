@@ -2,6 +2,7 @@
 {% block title %}{{ order.reference if order else 'New Sales Order' }}{% endblock %}
 
 {% block content %}
+{% set illustration_page = "sales" %}
 {% set deliverable = order and order.status in ['confirmed','partially_delivered'] %}
 
 <style>

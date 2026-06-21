@@ -12,6 +12,7 @@ dependencies = [
     "WTForms",
     "python-dotenv",
     "email-validator",
+    "PyJWT",
 ]
 
 [dependency-groups]
@@ -21,6 +22,11 @@ prod = [
 dev = [
     "pytest",
     "ruff",
+]
+# Optional: only needed when running the illustration generator (tools/illustrations).
+# `uv sync --group illustrations` installs this.
+illustrations = [
+    "openai",
 ]
 
 [tool.uv]

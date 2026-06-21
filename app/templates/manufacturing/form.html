@@ -14,6 +14,7 @@
 {% endmacro %}
 
 {% block content %}
+{% set illustration_page = "manufacturing" %}
 <style>
   /* manufacturing/form — internal CSS for the MO state-machine form.
      Covers: form-card chrome, header field grid, status badges, two child tables
@@ -87,6 +88,12 @@
   }
   .status--done      { background: var(--success);color: var(--ink); }
   .status--cancelled { background: var(--mute);   color: var(--on-dark); }
+  .status--todo        { background: var(--surface-soft); color: var(--charcoal);
+                         border: 1px solid var(--hairline-strong); }
+  .status--in_progress { background: var(--primary);      color: var(--on-dark); }
+  .wo-actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+  .wo-actions form { margin: 0; }
+  .wo-actions .btn { height: 30px; padding: 4px 10px; font-size: 12px; }
 </style>
 
 {% if not order %}
@@ -170,15 +177,44 @@
     </table>
   </form>
 
-  <h3>Work Orders</h3>
+  <h3>Work Orders {% if order.work_orders %}<span class="muted" style="font-weight:400">— {{ order.work_order_progress }} done</span>{% endif %}</h3>
+  {% if order.work_orders and not order.all_work_orders_done %}
+    <p class="muted" style="font-size:13px;margin:0 0 8px">Produce is blocked until every work order is Done.</p>
+  {% endif %}
   <table class="list-table">
-    <thead><tr><th>Operation</th><th>Work Center</th><th class="num">Expected (min)</th><th class="num">Real (min)</th></tr></thead>
+    <thead><tr><th>Operation</th><th>Work Center</th><th>Status</th><th>Assignee</th>
+      <th class="num">Expected</th><th class="num">Real</th><th class="num">Actions</th></tr></thead>
     <tbody>
       {% for w in order.work_orders %}
-        <tr><td>{{ w.operation }}</td><td>{{ w.work_center }}</td>
-            <td class="num">{{ w.expected_duration }}</td><td class="num">{{ w.real_duration }}</td></tr>
+        <tr>
+          <td>{{ w.operation }}</td>
+          <td>{{ w.work_center }}</td>
+          <td><span class="status status--{{ w.status }}">{{ w.status.replace('_',' ') }}</span></td>
+          <td>{{ w.assignee.name if w.assignee else '—' }}</td>
+          <td class="num">{{ w.expected_duration }} min</td>
+          <td class="num">{{ w.real_duration }} min</td>
+          <td class="num">
+            {% if access_can('manufacturing','production_entry') and order.status in ['confirmed','in_progress'] %}
+              <div class="wo-actions">
+                {% if w.status == 'todo' %}
+                  <form method="post" action="{{ route_for('manufacturing.wo_start', order_id=order.id, wo_id=w.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn--primary">Start</button>
+                  </form>
+                {% elif w.status == 'in_progress' %}
+                  <form method="post" action="{{ route_for('manufacturing.wo_finish', order_id=order.id, wo_id=w.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn--primary">Finish</button>
+                  </form>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </div>
+            {% endif %}
+          </td>
+        </tr>
       {% else %}
-        <tr><td colspan="4" class="muted">No work orders.</td></tr>
+        <tr><td colspan="7" class="muted">No work orders.</td></tr>
       {% endfor %}
     </tbody>
   </table>

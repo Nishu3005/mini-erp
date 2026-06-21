@@ -51,12 +51,17 @@ def create(data: dict) -> Product:
 
 
 def update(product: Product, data: dict) -> Product:
+    """Update a product's editable header fields.
+
+    NOTE: `on_hand_qty` is INTENTIONALLY NOT EDITABLE here. Direct edits would diverge from the
+    stock_ledger (the source of truth for inventory). Use `adjust_stock(product, delta, reason)`
+    to record a deliberate stock-adjustment movement instead. (Findings: Stock Ledger Bypass.)
+    """
     _validate(data)
     tracked = {
         "name": data["name"].strip(),
         "sales_price": Decimal(str(data.get("sales_price") or 0)),
         "cost_price": Decimal(str(data.get("cost_price") or 0)),
-        "on_hand_qty": Decimal(str(data.get("on_hand_qty") or 0)),
         "procure_on_demand": bool(data.get("procure_on_demand")),
     }
     for field, new in tracked.items():
@@ -72,3 +77,19 @@ def update(product: Product, data: dict) -> Product:
 
     db.session.commit()
     return product
+
+
+def adjust_stock(product: Product, delta: Decimal, reason: str = "") -> None:
+    """The ONLY sanctioned way to change On Hand outside of receive/produce/consume/deliver.
+
+    Writes a stock-ledger row with source='adjustment' so the ledger and on_hand stay reconcilable.
+    Caller commits (or the unit-of-work atomic context does).
+    """
+    from app.services import inventory
+    delta = Decimal(str(delta))
+    if delta == 0:
+        return
+    inventory.record_movement(product, delta, "adjustment", f"ADJ:{reason}" if reason else "ADJ")
+    audit.log("product", product.reference, "Product", "write",
+              field="on_hand_qty (adjustment)", old_value=str(product.on_hand_qty - delta),
+              new_value=str(product.on_hand_qty))

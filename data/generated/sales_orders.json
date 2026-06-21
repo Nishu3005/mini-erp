@@ -1,0 +1,347 @@
+[
+  {
+    "customer": "Grand Chatterjee Industries",
+    "salesperson": "sales.priya",
+    "status": "confirmed",
+    "created_offset_days": -53,
+    "lines": [
+      {
+        "product": "Medium Teak Bunk Bed",
+        "ordered_qty": 4,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Mahogany Studio",
+    "salesperson": "sales.chetan",
+    "status": "fully_delivered",
+    "created_offset_days": -40,
+    "lines": [
+      {
+        "product": "Wooden Table",
+        "ordered_qty": 14,
+        "delivered_qty": 14
+      },
+      {
+        "product": "Office Chair",
+        "ordered_qty": 10,
+        "delivered_qty": 10
+      },
+      {
+        "product": "Standard Rosewood Bookshelf",
+        "ordered_qty": 7,
+        "delivered_qty": 7
+      }
+    ]
+  },
+  {
+    "customer": "Imperial Iyer Trading Co.",
+    "salesperson": "sales.chetan",
+    "status": "fully_delivered",
+    "created_offset_days": -2,
+    "lines": [
+      {
+        "product": "Compact Beech Lounge Sofa",
+        "ordered_qty": 4,
+        "delivered_qty": 4
+      }
+    ]
+  },
+  {
+    "customer": "Teak Hospitality",
+    "salesperson": "sales.anjali",
+    "status": "partially_delivered",
+    "created_offset_days": -36,
+    "lines": [
+      {
+        "product": "Deluxe Beech Hinges (pack)",
+        "ordered_qty": 8,
+        "delivered_qty": 2
+      },
+      {
+        "product": "Small Rosewood Three-Seater Sofa",
+        "ordered_qty": 5,
+        "delivered_qty": 4
+      }
+    ]
+  },
+  {
+    "customer": "Zenith Distributors",
+    "salesperson": "sales.priya1",
+    "status": "confirmed",
+    "created_offset_days": -24,
+    "lines": [
+      {
+        "product": "Classic Cedar Wooden Top (6ft)",
+        "ordered_qty": 11,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Classic Rosewood Glass Panel",
+        "ordered_qty": 15,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Horizon Bose House",
+    "salesperson": "sales.farah6",
+    "status": "fully_delivered",
+    "created_offset_days": -59,
+    "lines": [
+      {
+        "product": "Premium Cedar Wooden Chair",
+        "ordered_qty": 15,
+        "delivered_qty": 15
+      }
+    ]
+  },
+  {
+    "customer": "Metro Hotel Group",
+    "salesperson": "sales.priya1",
+    "status": "fully_delivered",
+    "created_offset_days": -10,
+    "lines": [
+      {
+        "product": "Standard Pine Window Frame",
+        "ordered_qty": 3,
+        "delivered_qty": 3
+      }
+    ]
+  },
+  {
+    "customer": "Galaxy House",
+    "salesperson": "sales.priya",
+    "status": "draft",
+    "created_offset_days": -36,
+    "lines": [
+      {
+        "product": "Medium Mahogany Single Bed",
+        "ordered_qty": 15,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Small Mahogany Cushion (foam)",
+        "ordered_qty": 5,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Urban Ltd.",
+    "salesperson": "sales.ravi",
+    "status": "fully_delivered",
+    "created_offset_days": -4,
+    "lines": [
+      {
+        "product": "Compact Teak Two-Seater Sofa",
+        "ordered_qty": 13,
+        "delivered_qty": 13
+      }
+    ]
+  },
+  {
+    "customer": "Cosmos Mishra Resorts",
+    "salesperson": "sales.chetan",
+    "status": "confirmed",
+    "created_offset_days": -38,
+    "lines": [
+      {
+        "product": "Lighting Frame",
+        "ordered_qty": 14,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Premium Birch Single Bed",
+        "ordered_qty": 12,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Screws (pack)",
+        "ordered_qty": 9,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Lakshmi Pawar Studio",
+    "salesperson": "sales.chetan",
+    "status": "partially_delivered",
+    "created_offset_days": 0,
+    "lines": [
+      {
+        "product": "Premium Cedar Wooden Chair",
+        "ordered_qty": 8,
+        "delivered_qty": 4
+      },
+      {
+        "product": "Standard Rosewood Bookshelf",
+        "ordered_qty": 9,
+        "delivered_qty": 1
+      }
+    ]
+  },
+  {
+    "customer": "Birch Studio",
+    "salesperson": "sales.farah6",
+    "status": "confirmed",
+    "created_offset_days": -13,
+    "lines": [
+      {
+        "product": "Classic Cedar Single Bed",
+        "ordered_qty": 1,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Prime Ghosh Furniture",
+    "salesperson": "sales.usha10",
+    "status": "fully_delivered",
+    "created_offset_days": -39,
+    "lines": [
+      {
+        "product": "Classic Cedar Wooden Top (6ft)",
+        "ordered_qty": 12,
+        "delivered_qty": 12
+      },
+      {
+        "product": "Medium Cedar Executive Chair",
+        "ordered_qty": 13,
+        "delivered_qty": 13
+      }
+    ]
+  },
+  {
+    "customer": "Horizon Office Solutions",
+    "salesperson": "sales.manav2",
+    "status": "confirmed",
+    "created_offset_days": -24,
+    "lines": [
+      {
+        "product": "Medium Cedar Executive Chair",
+        "ordered_qty": 5,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Deluxe Birch Dining Chair",
+        "ordered_qty": 11,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Standard Pine Window Frame",
+        "ordered_qty": 1,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Dining Table",
+        "ordered_qty": 15,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Pine Office Solutions",
+    "salesperson": "sales.usha10",
+    "status": "draft",
+    "created_offset_days": -24,
+    "lines": [
+      {
+        "product": "Compact Beech Lounge Sofa",
+        "ordered_qty": 8,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Standard Walnut Brackets (pack)",
+        "ordered_qty": 12,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Town Enterprises",
+    "salesperson": "sales.chetan",
+    "status": "draft",
+    "created_offset_days": -33,
+    "lines": [
+      {
+        "product": "Wooden Legs",
+        "ordered_qty": 6,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Deluxe Walnut Bookshelf",
+        "ordered_qty": 5,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Premium Cedar Wooden Chair",
+        "ordered_qty": 12,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Classic Rosewood Glass Panel",
+        "ordered_qty": 9,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Royal Designs",
+    "salesperson": "sales.priya",
+    "status": "draft",
+    "created_offset_days": -18,
+    "lines": [
+      {
+        "product": "Standard Walnut Brackets (pack)",
+        "ordered_qty": 11,
+        "delivered_qty": 0
+      },
+      {
+        "product": "Standard Rosewood Bookshelf",
+        "ordered_qty": 10,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Walnut Saxena Office Solutions",
+    "salesperson": "sales.anjali",
+    "status": "cancelled",
+    "created_offset_days": -59,
+    "lines": [
+      {
+        "product": "Premium Birch Single Bed",
+        "ordered_qty": 9,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Star Mart",
+    "salesperson": "sales.usha10",
+    "status": "confirmed",
+    "created_offset_days": -58,
+    "lines": [
+      {
+        "product": "Medium Teak Bunk Bed",
+        "ordered_qty": 15,
+        "delivered_qty": 0
+      }
+    ]
+  },
+  {
+    "customer": "Lakshmi Khanna Ltd.",
+    "salesperson": "sales.priya",
+    "status": "confirmed",
+    "created_offset_days": -52,
+    "lines": [
+      {
+        "product": "Small Mahogany Cushion (foam)",
+        "ordered_qty": 12,
+        "delivered_qty": 0
+      }
+    ]
+  }
+]

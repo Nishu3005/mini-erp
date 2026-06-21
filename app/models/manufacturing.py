@@ -38,6 +38,20 @@ class ManufacturingOrder(db.Model):
                 return "Not Available"
         return "Available"
 
+    @property
+    def all_work_orders_done(self) -> bool:
+        """True when there are no WOs, or every WO is in `done` state. Produce gate."""
+        return all(w.status == "done" for w in self.work_orders)
+
+    @property
+    def work_order_progress(self) -> str:
+        """e.g. '2/5' — for the MO list view's at-a-glance progress."""
+        total = len(self.work_orders)
+        if not total:
+            return "—"
+        done = sum(1 for w in self.work_orders if w.status == "done")
+        return f"{done}/{total}"
+
     def __repr__(self) -> str:
         return f"<ManufacturingOrder {self.reference} {self.status}>"
 
@@ -68,4 +82,12 @@ class WorkOrder(db.Model):
     operation = db.Column(db.String(120))
     work_center = db.Column(db.String(120))
     expected_duration = db.Column(db.Integer, default=0)   # minutes (scaled by MO qty)
-    real_duration = db.Column(db.Integer, default=0)
+    real_duration = db.Column(db.Integer, default=0)       # auto-captured at Finish
+
+    # ---- per-WO operator routing (Finding D) ----
+    status = db.Column(db.String(16), default="todo", nullable=False)  # todo/in_progress/done
+    assignee_id = db.Column(db.Integer, db.ForeignKey("user.id"))      # operator (optional)
+    started_at = db.Column(db.DateTime)                                # set on Start
+    finished_at = db.Column(db.DateTime)                               # set on Finish
+
+    assignee = db.relationship("User", lazy="joined")

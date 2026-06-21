@@ -8,6 +8,7 @@
 {% macro status_badge(s) %}<span class="status status--{{ badge.get(s,'draft') }}">{{ s.replace('_',' ')|title }}</span>{% endmacro %}
 
 {% block content %}
+{% set illustration_page = "manufacturing" %}
 {{ ov.styles() }}
 <style>
   /* manufacturing/list — own CSS for the data table + filter chips + status pills.

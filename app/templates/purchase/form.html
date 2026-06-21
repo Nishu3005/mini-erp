@@ -2,6 +2,7 @@
 {% block title %}{{ order.reference if order else 'New Purchase Order' }}{% endblock %}
 
 {% block content %}
+{% set illustration_page = "purchase" %}
 {% set receivable = order and order.status in ['confirmed','partially_received'] %}
 
 <style>

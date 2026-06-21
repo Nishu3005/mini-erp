@@ -3,6 +3,7 @@
 {% block title %}Bills of Materials{% endblock %}
 
 {% block content %}
+{% set illustration_page = "bom" %}
 {{ ov.styles() }}
 <style>
   /* bom/list — simple table; no status filter, no kanban (toolbar passes kanban=False). */

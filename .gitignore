@@ -223,3 +223,10 @@ erp.db
 
 # uploaded user photos
 app/static/uploads/
+
+# Generated illustrations (run tools/illustrations/generate.py)
+app/static/illustrations/*/*.png
+app/static/illustrations/*/*.webp
+app/static/illustrations/*/*.jpg
+app/static/illustrations/*/*.jpeg
+app/static/illustrations/*/*.gif

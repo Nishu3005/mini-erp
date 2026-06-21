@@ -9,6 +9,7 @@
 {% macro status_badge(s) %}<span class="status status--{{ badge.get(s,'draft') }}">{{ s.replace('_',' ')|title }}</span>{% endmacro %}
 
 {% block content %}
+{% set illustration_page = "sales" %}
 {{ ov.styles() }}
 <style>
   /* sales/list — module-scoped page rules. The toolbar + kanban styles come from ov.styles(). */

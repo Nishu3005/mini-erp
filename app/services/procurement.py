@@ -25,8 +25,13 @@ def run_for_sales_order(order) -> dict:
         if not product.procure_on_demand:
             continue  # MTS with stock, or procurement disabled -> nothing to do
 
-        # Shortage = ordered demand beyond what is physically on hand.
-        shortage = Decimal(line.ordered_qty or 0) - Decimal(product.on_hand_qty or 0)
+        # Shortage = ordered demand beyond what is FREE TO USE (on_hand − reserved).
+        # NOT just on_hand_qty: stock already reserved for other open SO/MO lines is unavailable.
+        # The current SO line's own reservation is already counted in reserved_qty at this point
+        # (status is now 'confirmed' before we get here), so we add ordered_qty back to free-to-use
+        # to avoid double-subtracting this very line.
+        available = Decimal(product.free_to_use_qty) + Decimal(line.ordered_qty or 0)
+        shortage = Decimal(line.ordered_qty or 0) - available
         if shortage <= 0:
             continue
 

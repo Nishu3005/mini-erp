@@ -82,6 +82,8 @@
     {% block content %}{% endblock %}
   </main>
 
+  {# per-page footer illustration banner — pages set {% set illustration_page = 'sales' %} #}
+  {% include "partials/page_illustration.html" %}
   {% include "partials/footer.html" %}
 
   <script>

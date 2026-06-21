@@ -25,10 +25,12 @@ built vs. specced.
 ## Quick start
 ```bash
 uv sync                          # create .venv from the lockfile
-uv run flask db upgrade          # apply migrations
-uv run flask seed-data --reset   # load believable demo data
+uv run flask reset-db            # nuke + recreate tables + reseed (one shot, ~2s)
 uv run python run.py             # http://127.0.0.1:5000
 ```
+
+> If the DB ever gets into a weird state (e.g. `no such table: user`), just run
+> `uv run flask reset-db` again. It's idempotent and always lands on a clean seeded DB.
 
 Demo logins (from `data/users.json`): `admin1 / Admin@123` (system admin),
 `owner.shiv / Owner@123` (full access), `sales.ravi / Sales@123`, `purchase.vijay / Purchase@123`,

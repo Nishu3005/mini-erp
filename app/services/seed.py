@@ -26,6 +26,31 @@ from app.models.user import AccessRight, RIGHTS_MODULES, User
 from app.services import sequences
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
+AVATAR_SRC_DIR = DATA_DIR / "avatars"
+AVATAR_DST_DIR = STATIC_DIR / "uploads" / "avatars" / "seed"
+
+
+def _install_seed_avatars() -> list[str]:
+    """Copy data/avatars/avatar_*.jpg into static/uploads/avatars/seed/ exactly once.
+
+    Returns the list of `photo_path` values (relative to /static/) ready to assign to users.
+    If data/avatars/ is missing or empty (the user never ran fetch_avatars.py), returns [].
+    """
+    import shutil
+    if not AVATAR_SRC_DIR.is_dir():
+        return []
+    sources = sorted(AVATAR_SRC_DIR.glob("avatar_*.jpg"))
+    if not sources:
+        return []
+    AVATAR_DST_DIR.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for src in sources:
+        dst = AVATAR_DST_DIR / src.name
+        if not dst.exists() or dst.stat().st_size != src.stat().st_size:
+            shutil.copyfile(src, dst)
+        paths.append(f"uploads/avatars/seed/{src.name}")
+    return paths
 
 # all model classes whose tables get wiped on --reset (children before parents)
 _RESET_ORDER = [
@@ -44,30 +69,81 @@ def _load(name):
     return json.loads((DATA_DIR / name).read_text(encoding="utf-8"))
 
 
+def _load_generated_list(name: str) -> list:
+    """Return data/generated/<name> as a list, or [] if the file is missing/invalid."""
+    p = DATA_DIR / "generated" / name
+    if not p.exists():
+        return []
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        return []
+
+
+def _load_with_generated(name: str, key: str = "name") -> list:
+    """Anchor JSON + (optional) data/generated/<name> appended, de-duped by `key`.
+
+    The seed is two-step (see services/gendata.py): generators write to data/generated/<name>.json,
+    then this loader merges them with the hand-authored anchors. Anchors win on duplicates.
+    """
+    rows = _load(name)
+    gen_path = DATA_DIR / "generated" / name
+    if gen_path.exists():
+        try:
+            extra = json.loads(gen_path.read_text(encoding="utf-8"))
+            seen = {r.get(key) for r in rows}
+            rows = rows + [r for r in extra if r.get(key) not in seen]
+        except (ValueError, OSError):
+            pass
+    return rows
+
+
 def _days(offset):
     return datetime.utcnow() + timedelta(days=int(offset or 0))
 
 
+def _tables_exist() -> bool:
+    """True iff the core `user` table exists in the live DB."""
+    from sqlalchemy import inspect
+    return inspect(db.engine).has_table("user")
+
+
 def has_data() -> bool:
+    if not _tables_exist():
+        return False
     return db.session.query(User).count() > 0
 
 
 def reset() -> None:
+    """Wipe all rows. If tables don't exist (fresh / corrupted DB), create them first."""
+    if not _tables_exist():
+        db.create_all()
+        return
     for model in _RESET_ORDER:
         db.session.query(model).delete()
     db.session.commit()
 
 
 def seed() -> dict:
-    """Insert all seed data. Returns a small summary of counts.
+    """Bulk-insert all seed data from data/*.json + data/generated/*.json. FAST."""
+    import time
+    _T = {"start": time.perf_counter()}
+    def _tick(name):
+        now = time.perf_counter()
+        elapsed = now - _T.get("last", _T["start"])
+        _T["last"] = now
+        print(f"  [seed] {name:24} +{elapsed:6.2f}s  (total {now - _T['start']:6.2f}s)", flush=True)
 
-    Strategy: hand-authored JSON seeds the anchor records (named users a judge will recognise,
-    curated products + BoMs). Then `data/generators/` programmatically scale the rest —
-    ~40 extra team users (with a pending-list), ~40 vendors, ~500 products, ~5,000 customers,
-    and proportionally more orders. See data/generators/__init__.py.
-    """
-    from data import generators as gen
     presets = _load("access_presets.json")
+    _tick("load presets")
+
+    # Seed passwords use a FAST hash method (pbkdf2:sha256:1 iteration). The default takes ~5s per
+    # password on Windows for cryptographic safety — but for seed/demo passwords users will reset,
+    # the security tradeoff is acceptable and turns a 3-minute seed into a sub-second one.
+    from werkzeug.security import generate_password_hash
+    _FAST_HASH = "pbkdf2:sha256:1"
+    def _fast_set_password(user, raw: str) -> None:
+        user.password_hash = generate_password_hash(raw, method=_FAST_HASH)
 
     # --- users + access rights ---
     by_login = {}
@@ -81,7 +157,7 @@ def seed() -> dict:
             role=u.get("role"), status=u.get("status", "active"),
             requested_role=u.get("requested_role"),
         )
-        user.set_password(u["password"])
+        _fast_set_password(user, u["password"])
         db.session.add(user)
         db.session.flush()
         by_login[u["login_id"]] = user
@@ -99,68 +175,80 @@ def seed() -> dict:
                 ))
         return user
 
-    # 1. hand-authored anchors (admin/owner/sales.ravi/...)
-    for u in _load("users.json"):
-        _add_user(u)
-    # 2. generated team members (~40 across roles + a small pending list)
-    for u in gen.generate_users():
-        # avoid login_id collisions with anchors
-        suffix = 0
+    # 1) Hand-authored anchors (the 8 named users a judge will recognise).
+    # 2) Generated team members (15 extra, inline — no separate JSON files, no two-step).
+    from data import generators as gen
+    for u in _load("users.json") + gen.generate_users():
+        # avoid login_id collisions safely
         original = u["login_id"]
+        suffix = 0
         while u["login_id"] in by_login:
             suffix += 1
             u["login_id"] = (original + str(suffix))[:12]
         _add_user(u)
 
-    # --- partners ---
-    by_customer = {}
-    # anchors (named customers from JSON) + generated (~5,000)
+    # Avatars: copy the 40 fetched portraits into static/ and round-robin them across users.
+    # No-op if data/avatars/ is empty — users just keep the default smiley.
+    avatar_paths = _install_seed_avatars()
+    if avatar_paths:
+        for i, user in enumerate(by_login.values()):
+            user.photo_path = avatar_paths[i % len(avatar_paths)]
+
+    db.session.flush(); _tick("users + rights")
+    # --- partners: anchors + generated (compact demo: 20 vendors, ~300 customers) ---
     anchor_customers = _load("customers.json")
-    # 900 generated customers — keeps the demo snappy. Admin can bulk-upload more from /admin/.
-    extra_customers = gen.generate_customers(count=900)
-    all_customers = anchor_customers + [c for c in extra_customers
-                                        if c["name"] not in {a["name"] for a in anchor_customers}]
-    # bulk_save_objects skips ORM events for speed; we don't need IDs back during creation
-    rows = [Customer(name=c["name"], address=c.get("address")) for c in all_customers]
-    db.session.bulk_save_objects(rows)
-    db.session.flush()
-    for row in Customer.query.all():
-        by_customer[row.name] = row
+    extra_customers = gen.generate_customers(count=300)
+    anchor_cnames = {c["name"] for c in anchor_customers}
+    all_customers = anchor_customers + [c for c in extra_customers if c["name"] not in anchor_cnames]
+    db.session.bulk_save_objects([Customer(name=c["name"], address=c.get("address"))
+                                  for c in all_customers])
 
-    by_vendor = {}
     anchor_vendors = _load("vendors.json")
-    extra_vendors = gen.generate_vendors(count=40)
-    all_vendors = anchor_vendors + [v for v in extra_vendors
-                                    if v["name"] not in {a["name"] for a in anchor_vendors}]
-    for v in all_vendors:
-        row = Vendor(name=v["name"], address=v.get("address"))
-        db.session.add(row); db.session.flush()
-        by_vendor[v["name"]] = row
+    extra_vendors = gen.generate_vendors(count=20)
+    anchor_vnames = {v["name"] for v in anchor_vendors}
+    all_vendors = anchor_vendors + [v for v in extra_vendors if v["name"] not in anchor_vnames]
+    db.session.bulk_save_objects([Vendor(name=v["name"], address=v.get("address"))
+                                  for v in all_vendors])
 
-    # --- products (vendor resolved now; bom linked after BoMs exist) ---
-    by_product = {}
+    db.session.flush()
+    by_customer = {row.name: row for row in Customer.query.all()}
+    by_vendor = {row.name: row for row in Vendor.query.all()}
+
+    _tick("partners")
+    # --- products: anchors + ~50 generated (compact demo) ---
     pending_bom_link = []  # (product_name, bom_name)
-    # anchors first (named products judges will recognise), then generated catalogue (~500)
     anchor_products = _load("products.json")
-    extra_products = gen.generate_products(count=500)
-    seen_p = {p["name"] for p in anchor_products}
-    all_products = anchor_products + [p for p in extra_products if p["name"] not in seen_p]
-    for p in all_products:
-        prod = Product(
-            reference=sequences.next_reference("PRD"), name=p["name"],
+    extra_products = gen.generate_products(count=50)
+    anchor_pnames = {p["name"] for p in anchor_products}
+    products = anchor_products + [p for p in extra_products if p["name"] not in anchor_pnames]
+
+    # Pre-allocate references in one batch — one sequence call instead of one-per-product.
+    from app.models.sequence import Sequence
+    seq = db.session.query(Sequence).filter_by(prefix="PRD").with_for_update().one_or_none()
+    if seq is None:
+        seq = Sequence(prefix="PRD", next_value=1); db.session.add(seq); db.session.flush()
+    first_num = seq.next_value
+    seq.next_value = first_num + len(products)
+    db.session.flush()
+
+    product_rows = []
+    for i, p in enumerate(products):
+        product_rows.append(Product(
+            reference=f"PRD-{first_num + i:06d}", name=p["name"],
             sales_price=Decimal(str(p.get("sales_price", 0))),
             cost_price=Decimal(str(p.get("cost_price", 0))),
             on_hand_qty=Decimal(str(p.get("on_hand_qty", 0))),
             procure_on_demand=p.get("procure_on_demand", False),
             procure_method=p.get("procure_method"),
-        )
-        if p.get("vendor"):
-            prod.vendor_id = by_vendor[p["vendor"]].id
-        db.session.add(prod); db.session.flush()
-        by_product[p["name"]] = prod
+            vendor_id=by_vendor[p["vendor"]].id if p.get("vendor") else None,
+        ))
         if p.get("bom"):
             pending_bom_link.append((p["name"], p["bom"]))
+    db.session.bulk_save_objects(product_rows)
+    db.session.flush()
+    by_product = {row.name: row for row in Product.query.all()}
 
+    _tick("products")
     # --- BoMs ---
     by_bom = {}
     for b in _load("boms.json"):
@@ -188,14 +276,16 @@ def seed() -> dict:
         by_product[product_name].bom_id = by_bom[bom_name].id
     db.session.flush()
 
+    _tick("boms")
     # --- sales orders ---
     n_so = 0
-    # ~250 generated SOs across active sales staff, anchor SOs first (they have expected_date set)
+    # anchors (curated, with expected_date) + 25 inline-generated sales orders
     so_sources = _load("sales_orders.json") + gen.generate_sales_orders(
-        count=250,
+        count=25,
         customer_names=list(by_customer.keys()),
         product_names=list(by_product.keys()),
-        salesperson_logins=[lid for lid, u in by_login.items() if (u.role or "") == "sales"],
+        salesperson_logins=[lid for lid, u in by_login.items()
+                            if (u.role or "") == "sales" and u.status == "active"] or [next(iter(by_login))],
     )
     for s in so_sources:
         order = SalesOrder(
@@ -217,13 +307,15 @@ def seed() -> dict:
             ))
         n_so += 1
 
+    _tick("sales orders")
     # --- purchase orders ---
     n_po = 0
     po_sources = _load("purchase_orders.json") + gen.generate_purchase_orders(
-        count=150,
+        count=15,
         vendor_names=list(by_vendor.keys()),
         product_names=list(by_product.keys()),
-        responsible_logins=[lid for lid, u in by_login.items() if (u.role or "") == "purchase"],
+        responsible_logins=[lid for lid, u in by_login.items()
+                            if (u.role or "") == "purchase" and u.status == "active"] or [next(iter(by_login))],
     )
     for po in po_sources:
         order = PurchaseOrder(
@@ -245,12 +337,14 @@ def seed() -> dict:
             ))
         n_po += 1
 
+    _tick("purchase orders")
     # --- manufacturing orders (components + work orders derived from BoM x qty) ---
     n_mo = 0
     mo_sources = _load("manufacturing_orders.json") + gen.generate_manufacturing_orders(
-        count=80,
+        count=8,
         bom_names=list(by_bom.keys()),
-        assignee_logins=[lid for lid, u in by_login.items() if (u.role or "") == "manufacturing"],
+        assignee_logins=[lid for lid, u in by_login.items()
+                         if (u.role or "") == "manufacturing" and u.status == "active"] or [next(iter(by_login))],
     )
     for mo in mo_sources:
         bom = by_bom.get(mo["bom"])
@@ -281,6 +375,7 @@ def seed() -> dict:
                 ))
         n_mo += 1
 
+    _tick("manufacturing orders")
     # --- audit logs (believable history for the Audit Logs screen) ---
     n_audit = 0
     for a in _load("audit_logs.json"):
@@ -298,7 +393,9 @@ def seed() -> dict:
         ))
         n_audit += 1
 
+    _tick("audit logs")
     db.session.commit()
+    _tick("commit")
     return {
         "users": len(by_login), "customers": len(by_customer), "vendors": len(by_vendor),
         "products": len(by_product), "boms": len(by_bom),

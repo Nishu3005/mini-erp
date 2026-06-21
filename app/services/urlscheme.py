@@ -18,7 +18,7 @@ bp = Blueprint("scoped", __name__)
 _ROLES = {"admin", "sales", "inventory", "manufacturing", "purchase", "owner"}
 
 # flat URL prefixes that are NEVER scoped (no session/role on the path)
-_NEVER_SCOPE_PREFIXES = ("/login", "/signup", "/logout", "/pending", "/static/")
+_NEVER_SCOPE_PREFIXES = ("/login", "/signup", "/logout", "/pending", "/static/", "/api/")
 
 
 def _expected_role_username():
@@ -38,8 +38,11 @@ def _should_scope(flat_path: str) -> bool:
     return True
 
 
-@bp.route("/<role>/<username>/", defaults={"rest": ""})
-@bp.route("/<role>/<username>/<path:rest>")
+_ALL_HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+
+
+@bp.route("/<role>/<username>/", defaults={"rest": ""}, methods=_ALL_HTTP_METHODS)
+@bp.route("/<role>/<username>/<path:rest>", methods=_ALL_HTTP_METHODS)
 def dispatch(role, username, rest):
     """Validate role+username, then RENDER the matching flat view in place (URL bar stays scoped)."""
     if role not in _ROLES:

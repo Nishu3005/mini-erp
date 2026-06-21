@@ -55,20 +55,16 @@ def _mobile():
 
 
 # ---------- users (40 team members beyond the JSON anchors) ----------
+# Compact demo: 15 extra users on top of the 8 hand-authored anchors = 23 total.
 TEAM_PROFILE = {
     # role -> (count, position_titles, login_prefix, password)
-    "sales":         (12, ["Sales Executive","Sales Associate","Account Manager","Key Account Mgr"],
-                      "sales", "Sales@123"),
-    "purchase":      (8,  ["Purchase Officer","Buyer","Procurement Analyst","Vendor Mgr"],
-                      "purchase", "Purchase@123"),
-    "manufacturing": (10, ["Production Supervisor","Floor Lead","QA Engineer","Plant Operator","Production Planner"],
-                      "mfg", "Mfg@1234"),
-    "inventory":     (6,  ["Inventory Manager","Stock Controller","Warehouse Lead"],
-                      "inv", "Inv@1234"),
-    "owner":         (2,  ["Business Owner","Director"],
-                      "owner", "Owner@123"),
-    # a few pending users so the admin Pending tab has content out of the box
-    "_pending":      (4,  ["—"], "pending", "Strong@1pass"),
+    "sales":         (4, ["Sales Executive","Account Manager"], "sales", "Sales@123"),
+    "purchase":      (3, ["Purchase Officer","Buyer"], "purchase", "Purchase@123"),
+    "manufacturing": (3, ["Production Supervisor","Floor Lead"], "mfg", "Mfg@1234"),
+    "inventory":     (2, ["Inventory Manager","Stock Controller"], "inv", "Inv@1234"),
+    "owner":         (1, ["Director"], "owner", "Owner@123"),
+    # a couple of pending users so the admin Pending tab has content out of the box
+    "_pending":      (2, ["—"], "pending", "Strong@1pass"),
 }
 
 
